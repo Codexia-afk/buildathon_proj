@@ -1,0 +1,137 @@
+{
+  "testName": "Push-Ups (Full Body Reps to Fatigue)",
+  "unit": "reps",
+  "description": "Standard standard-form push-ups (chest touches within 4 inches of floor with elbow <90 deg, full extension >160 deg, neutral spine) scored against Indian Youth & Sports Academy benchmarks.",
+  "brackets": [
+    {
+      "bracketId": "10-13",
+      "label": "Sub-Junior (10-13 yrs)",
+      "minAge": 10,
+      "maxAge": 13,
+      "male": {
+        "p10": 4,
+        "p25": 8,
+        "p50": 14,
+        "p75": 22,
+        "p90": 30,
+        "p95": 36,
+        "p99": 45,
+        "nationalRecord": 58
+      },
+      "female": {
+        "p10": 2,
+        "p25": 5,
+        "p50": 10,
+        "p75": 16,
+        "p90": 23,
+        "p95": 28,
+        "p99": 36,
+        "nationalRecord": 48
+      }
+    },
+    {
+      "bracketId": "14-17",
+      "label": "Junior (14-17 yrs)",
+      "minAge": 14,
+      "maxAge": 17,
+      "male": {
+        "p10": 10,
+        "p25": 18,
+        "p50": 28,
+        "p75": 38,
+        "p90": 48,
+        "p95": 55,
+        "p99": 68,
+        "nationalRecord": 84
+      },
+      "female": {
+        "p10": 5,
+        "p25": 11,
+        "p50": 19,
+        "p75": 27,
+        "p90": 36,
+        "p95": 42,
+        "p99": 52,
+        "nationalRecord": 65
+      }
+    },
+    {
+      "bracketId": "18-22",
+      "label": "Youth / College (18-22 yrs)",
+      "minAge": 18,
+      "maxAge": 22,
+      "male": {
+        "p10": 15,
+        "p25": 25,
+        "p50": 36,
+        "p75": 48,
+        "p90": 60,
+        "p95": 70,
+        "p99": 85,
+        "nationalRecord": 105
+      },
+      "female": {
+        "p10": 8,
+        "p25": 15,
+        "p50": 24,
+        "p75": 34,
+        "p90": 44,
+        "p95": 50,
+        "p99": 62,
+        "nationalRecord": 78
+      }
+    },
+    {
+      "bracketId": "23-30",
+      "label": "Senior (23-30 yrs)",
+      "minAge": 23,
+      "maxAge": 30,
+      "male": {
+        "p10": 16,
+        "p25": 26,
+        "p50": 38,
+        "p75": 50,
+        "p90": 62,
+        "p95": 72,
+        "p99": 88,
+        "nationalRecord": 112
+      },
+      "female": {
+        "p10": 9,
+        "p25": 16,
+        "p50": 25,
+        "p75": 35,
+        "p90": 45,
+        "p95": 52,
+        "p99": 64,
+        "nationalRecord": 80
+      }
+    },
+    {
+      "bracketId": "30+",
+      "label": "Masters (31+ yrs)",
+      "minAge": 31,
+      "maxAge": 99,
+      "male": {
+        "p10": 12,
+        "p25": 20,
+        "p50": 30,
+        "p75": 40,
+        "p90": 52,
+        "p95": 60,
+        "p99": 75,
+        "nationalRecord": 95
+      },
+      "female": {
+        "p10": 6,
+        "p25": 12,
+        "p50": 20,
+        "p75": 28,
+        "p90": 36,
+        "p95": 44,
+        "p99": 54,
+        "nationalRecord": 70
+      }
+    }
+  ]
+}
