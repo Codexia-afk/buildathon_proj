@@ -2,6 +2,7 @@ import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { Navbar } from './components/common/Navbar';
 import { Footer } from './components/common/Footer';
+import { MobileBottomNav } from './components/common/MobileBottomNav';
 import { LandingPage } from './components/landing/LandingPage';
 import { AthletePage } from './pages/AthletePage';
 import { ScoutDashboard } from './components/scout/ScoutDashboard';
@@ -10,7 +11,7 @@ import { PercentileExplorer } from './components/benchmark/PercentileExplorer';
 export const App: React.FC = () => {
   return (
     <Router>
-      <div className="flex flex-col min-h-screen bg-background text-slate-100">
+      <div className="flex flex-col min-h-screen bg-background text-slate-100 pb-16 md:pb-0">
         <Navbar />
         <main className="flex-grow">
           <Routes>
@@ -22,6 +23,7 @@ export const App: React.FC = () => {
           </Routes>
         </main>
         <Footer />
+        <MobileBottomNav />
       </div>
     </Router>
   );

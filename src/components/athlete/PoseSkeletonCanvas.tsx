@@ -1,17 +1,18 @@
 import React, { useEffect, useRef } from 'react';
 import { NormalizedLandmark } from '@mediapipe/tasks-vision';
+import { TestType } from '../../types';
 
 interface PoseSkeletonCanvasProps {
   landmarks: NormalizedLandmark[] | null;
-  currentElbowAngle: number;
-  currentPlankAngle: number;
+  testType?: TestType;
+  currentPrimaryAngle: number;
+  currentSecondaryAngle: number;
   activeSide: 'left' | 'right' | 'none';
   targetDepthReached: boolean;
   videoWidth: number;
   videoHeight: number;
 }
 
-// MediaPipe 33 Landmark Connection Pairs
 const POSE_CONNECTIONS = [
   // Upper body
   [11, 12], // left shoulder to right shoulder
@@ -32,8 +33,9 @@ const POSE_CONNECTIONS = [
 
 export const PoseSkeletonCanvas: React.FC<PoseSkeletonCanvasProps> = ({
   landmarks,
-  currentElbowAngle,
-  currentPlankAngle,
+  testType = 'pushups_standard',
+  currentPrimaryAngle,
+  currentSecondaryAngle,
   activeSide,
   targetDepthReached,
   videoWidth,
@@ -63,7 +65,7 @@ export const PoseSkeletonCanvas: React.FC<PoseSkeletonCanvasProps> = ({
       const p1 = landmarks[startIdx];
       const p2 = landmarks[endIdx];
 
-      if (!p1 || !p2 || (p1.visibility && p1.visibility < 0.4) || (p2.visibility && p2.visibility < 0.4)) {
+      if (!p1 || !p2 || (p1.visibility && p1.visibility < 0.35) || (p2.visibility && p2.visibility < 0.35)) {
         return;
       }
 
@@ -72,22 +74,33 @@ export const PoseSkeletonCanvas: React.FC<PoseSkeletonCanvasProps> = ({
       const x2 = p2.x * width;
       const y2 = p2.y * height;
 
-      const isPrimaryArm =
-        (activeSide === 'right' && (startIdx === 12 || startIdx === 14) && (endIdx === 14 || endIdx === 16)) ||
-        (activeSide === 'left' && (startIdx === 11 || startIdx === 13) && (endIdx === 13 || endIdx === 15));
+      // Determine active joint highlighting
+      let isPrimarySegment = false;
+      if (testType === 'pushups_standard') {
+        isPrimarySegment =
+          (activeSide === 'right' && (startIdx === 12 || startIdx === 14) && (endIdx === 14 || endIdx === 16)) ||
+          (activeSide === 'left' && (startIdx === 11 || startIdx === 13) && (endIdx === 13 || endIdx === 15));
+      } else if (testType === 'squats_standard') {
+        isPrimarySegment =
+          (activeSide === 'right' && (startIdx === 24 || startIdx === 26) && (endIdx === 26 || endIdx === 28)) ||
+          (activeSide === 'left' && (startIdx === 23 || startIdx === 25) && (endIdx === 25 || endIdx === 27));
+      } else if (testType === 'plank_hold') {
+        isPrimarySegment =
+          (activeSide === 'right' && (startIdx === 12 || startIdx === 24) && (endIdx === 24 || endIdx === 28)) ||
+          (activeSide === 'left' && (startIdx === 11 || startIdx === 23) && (endIdx === 23 || endIdx === 27));
+      }
 
       ctx.beginPath();
       ctx.moveTo(x1, y1);
       ctx.lineTo(x2, y2);
 
-      if (isPrimaryArm) {
-        // Highlighting active arm
+      if (isPrimarySegment) {
         ctx.strokeStyle = targetDepthReached ? '#10B981' : '#FF4D00';
         ctx.lineWidth = 5;
         ctx.shadowColor = targetDepthReached ? 'rgba(16,185,129,0.8)' : 'rgba(255,77,0,0.8)';
         ctx.shadowBlur = 12;
       } else {
-        ctx.strokeStyle = 'rgba(0, 240, 255, 0.6)';
+        ctx.strokeStyle = 'rgba(0, 240, 255, 0.65)';
         ctx.lineWidth = 3;
         ctx.shadowColor = 'rgba(0, 240, 255, 0.4)';
         ctx.shadowBlur = 6;
@@ -99,34 +112,34 @@ export const PoseSkeletonCanvas: React.FC<PoseSkeletonCanvasProps> = ({
 
     // 2. Draw Landmark Joints
     landmarks.forEach((landmark, idx) => {
-      // Filter out small facial keypoints to keep skeleton clean
-      if (idx > 0 && idx < 11) return;
-      if (landmark.visibility && landmark.visibility < 0.4) return;
+      if (idx > 0 && idx < 11) return; // ignore facial keypoints
+      if (landmark.visibility && landmark.visibility < 0.35) return;
 
       const x = landmark.x * width;
       const y = landmark.y * height;
 
-      const isElbow = (activeSide === 'right' && idx === 14) || (activeSide === 'left' && idx === 13);
-      const isShoulder = (activeSide === 'right' && idx === 12) || (activeSide === 'left' && idx === 11);
-      const isHip = (activeSide === 'right' && idx === 24) || (activeSide === 'left' && idx === 23);
+      let isPrimaryVertex = false;
+      if (testType === 'pushups_standard') {
+        isPrimaryVertex = (activeSide === 'right' && idx === 14) || (activeSide === 'left' && idx === 13);
+      } else if (testType === 'squats_standard') {
+        isPrimaryVertex = (activeSide === 'right' && idx === 26) || (activeSide === 'left' && idx === 25);
+      } else if (testType === 'plank_hold') {
+        isPrimaryVertex = (activeSide === 'right' && idx === 24) || (activeSide === 'left' && idx === 23);
+      }
 
       ctx.beginPath();
-      ctx.arc(x, y, isElbow ? 8 : 5, 0, 2 * Math.PI);
+      ctx.arc(x, y, isPrimaryVertex ? 8 : 4.5, 0, 2 * Math.PI);
 
-      if (isElbow) {
+      if (isPrimaryVertex) {
         ctx.fillStyle = targetDepthReached ? '#10B981' : '#FF4D00';
         ctx.strokeStyle = '#FFFFFF';
         ctx.lineWidth = 2.5;
         ctx.shadowColor = targetDepthReached ? '#10B981' : '#FF4D00';
-        ctx.shadowBlur = 15;
-      } else if (isShoulder || isHip) {
+        ctx.shadowBlur = 16;
+      } else {
         ctx.fillStyle = '#00F0FF';
         ctx.strokeStyle = '#FFFFFF';
-        ctx.lineWidth = 1.5;
-      } else {
-        ctx.fillStyle = 'rgba(255, 255, 255, 0.85)';
-        ctx.strokeStyle = 'rgba(0, 240, 255, 0.6)';
-        ctx.lineWidth = 1;
+        ctx.lineWidth = 1.2;
       }
 
       ctx.fill();
@@ -134,20 +147,25 @@ export const PoseSkeletonCanvas: React.FC<PoseSkeletonCanvasProps> = ({
       ctx.shadowBlur = 0;
     });
 
-    // 3. Render Joint Angle Text Badges on Elbow and Hip
-    const activeElbowIdx = activeSide === 'right' ? 14 : 13;
-    const activeElbow = landmarks[activeElbowIdx];
-    if (activeElbow && (activeElbow.visibility || 1) > 0.4) {
-      const ex = activeElbow.x * width;
-      const ey = activeElbow.y * height;
+    // 3. Render Joint Angle Text Badge on active joint
+    let activeVertexIdx = activeSide === 'right' ? 14 : 13;
+    if (testType === 'squats_standard') {
+      activeVertexIdx = activeSide === 'right' ? 26 : 25;
+    } else if (testType === 'plank_hold') {
+      activeVertexIdx = activeSide === 'right' ? 24 : 23;
+    }
 
-      // Draw angle badge
-      const text = `${Math.round(currentElbowAngle)}°`;
+    const activeVertex = landmarks[activeVertexIdx];
+    if (activeVertex && (activeVertex.visibility || 1) > 0.35) {
+      const vx = activeVertex.x * width;
+      const vy = activeVertex.y * height;
+
+      const text = `${Math.round(currentPrimaryAngle)}°`;
       ctx.font = 'bold 13px "JetBrains Mono", monospace';
       const textWidth = ctx.measureText(text).width;
 
-      const badgeX = ex + (activeSide === 'right' ? 14 : -textWidth - 24);
-      const badgeY = ey - 10;
+      const badgeX = vx + (activeSide === 'right' ? 14 : -textWidth - 24);
+      const badgeY = vy - 10;
 
       ctx.fillStyle = targetDepthReached ? 'rgba(16, 185, 129, 0.9)' : 'rgba(15, 23, 42, 0.85)';
       ctx.strokeStyle = targetDepthReached ? '#10B981' : '#FF4D00';
@@ -160,7 +178,7 @@ export const PoseSkeletonCanvas: React.FC<PoseSkeletonCanvasProps> = ({
       ctx.fillStyle = '#FFFFFF';
       ctx.fillText(text, badgeX + 7, badgeY);
     }
-  }, [landmarks, currentElbowAngle, currentPlankAngle, activeSide, targetDepthReached]);
+  }, [landmarks, testType, currentPrimaryAngle, currentSecondaryAngle, activeSide, targetDepthReached]);
 
   return (
     <canvas

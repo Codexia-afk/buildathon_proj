@@ -18,8 +18,8 @@ interface PerformanceChartProps {
 export const PerformanceChart: React.FC<PerformanceChartProps> = ({ history }) => {
   if (!history || history.length === 0) {
     return (
-      <div className="h-48 flex items-center justify-center text-slate-500 text-xs">
-        No prior assessment history available for this athlete.
+      <div className="h-48 flex items-center justify-center text-slate-500 text-xs font-mono">
+        No prior assessment history recorded for this athlete.
       </div>
     );
   }
@@ -30,23 +30,24 @@ export const PerformanceChart: React.FC<PerformanceChartProps> = ({ history }) =
       month: 'short',
       day: 'numeric',
     }),
-    reps: item.repsCount,
+    score: item.score || item.repsCount || 0,
     percentile: Math.round(item.percentile),
-    formScore: item.biomechanics.formScore,
+    formScore: item.biomechanics?.formScore || 90,
     attempt: `Attempt ${index + 1}`,
   }));
 
   // If single assessment, add simulated baseline for trend visualization
-  const displayData = chartData.length === 1 
+  const firstItem = chartData[0];
+  const displayData = (chartData.length === 1 && firstItem)
     ? [
         {
           date: 'Baseline',
-          reps: Math.max(0, chartData[0].reps - 6),
-          percentile: Math.max(0, chartData[0].percentile - 8),
-          formScore: chartData[0].formScore - 5,
+          score: Math.max(0, firstItem.score - 6),
+          percentile: Math.max(0, firstItem.percentile - 8),
+          formScore: firstItem.formScore - 5,
           attempt: 'Baseline Test',
         },
-        chartData[0],
+        firstItem,
       ]
     : chartData;
 
@@ -55,7 +56,7 @@ export const PerformanceChart: React.FC<PerformanceChartProps> = ({ history }) =
       <div className="flex items-center justify-between">
         <div>
           <h4 className="text-xs font-bold uppercase tracking-wider text-slate-300">
-            Rep Count & Percentile Progression
+            Score & National Percentile Progression
           </h4>
           <p className="text-[11px] text-slate-500">
             Chronological growth curve tracked across AI verified attempts
@@ -63,7 +64,7 @@ export const PerformanceChart: React.FC<PerformanceChartProps> = ({ history }) =
         </div>
         <div className="flex items-center gap-4 text-xs">
           <span className="flex items-center gap-1 text-brand-300">
-            <span className="w-2.5 h-2.5 rounded-full bg-brand inline-block" /> Push-Up Reps
+            <span className="w-2.5 h-2.5 rounded-full bg-brand inline-block" /> Test Score
           </span>
           <span className="flex items-center gap-1 text-cyber">
             <span className="w-2.5 h-2.5 rounded-full bg-cyber inline-block" /> National %ile
@@ -75,7 +76,7 @@ export const PerformanceChart: React.FC<PerformanceChartProps> = ({ history }) =
         <ResponsiveContainer width="100%" height="100%">
           <AreaChart data={displayData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
             <defs>
-              <linearGradient id="colorReps" x1="0" y1="0" x2="0" y2="1">
+              <linearGradient id="colorScore" x1="0" y1="0" x2="0" y2="1">
                 <stop offset="5%" stopColor="#FF4D00" stopOpacity={0.4} />
                 <stop offset="95%" stopColor="#FF4D00" stopOpacity={0.0} />
               </linearGradient>
@@ -98,12 +99,12 @@ export const PerformanceChart: React.FC<PerformanceChartProps> = ({ history }) =
             <ReferenceLine y={90} stroke="#F59E0B" strokeDasharray="3 3" label={{ value: 'Elite (90%)', fill: '#F59E0B', fontSize: 10 }} />
             <Area
               type="monotone"
-              dataKey="reps"
+              dataKey="score"
               stroke="#FF4D00"
               strokeWidth={3}
               fillOpacity={1}
-              fill="url(#colorReps)"
-              name="Reps"
+              fill="url(#colorScore)"
+              name="Score"
             />
             <Area
               type="monotone"

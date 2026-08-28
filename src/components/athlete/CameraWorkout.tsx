@@ -1,12 +1,26 @@
 import React, { useRef, useState, useEffect } from 'react';
-import { Camera, CameraOff, AlertCircle, RefreshCw, UserCheck, ShieldCheck, Play, MonitorPlay } from 'lucide-react';
-import { AthleteProfile, AssessmentResult } from '../../types';
+import { 
+  Camera, 
+  CameraOff, 
+  AlertCircle, 
+  RefreshCw, 
+  UserCheck, 
+  ShieldCheck, 
+  Play, 
+  MonitorPlay,
+  Activity,
+  Flame,
+  Zap,
+  Info,
+  Maximize2
+} from 'lucide-react';
+import { AthleteProfile, AssessmentResult, TestType } from '../../types';
 import { usePoseDetection } from '../../hooks/usePoseDetection';
-import { usePushUpCounter } from '../../hooks/usePushUpCounter';
+import { useExerciseEngine } from '../../hooks/useExerciseEngine';
 import { PoseSkeletonCanvas } from './PoseSkeletonCanvas';
 import { LiveFormHUD } from './LiveFormHUD';
 import { VerifiedResultCard } from './VerifiedResultCard';
-import { calculatePercentile } from '../../services/percentileEngine';
+import { calculatePercentile, EXERCISE_CONFIGS } from '../../services/percentileEngine';
 import { saveAssessment } from '../../services/dataService';
 import { Button } from '../common/Button';
 
@@ -20,8 +34,11 @@ export const CameraWorkout: React.FC<CameraWorkoutProps> = ({
   onProfileEdit,
 }) => {
   const videoRef = useRef<HTMLVideoElement | null>(null);
+  const containerRef = useRef<HTMLDivElement | null>(null);
+  const [activeTest, setActiveTest] = useState<TestType>('pushups_standard');
   const [completedAssessment, setCompletedAssessment] = useState<AssessmentResult | null>(null);
   const [videoDimensions, setVideoDimensions] = useState({ width: 640, height: 480 });
+  const [isFullscreen, setIsFullscreen] = useState<boolean>(false);
 
   const {
     isModelLoading,
@@ -32,16 +49,19 @@ export const CameraWorkout: React.FC<CameraWorkoutProps> = ({
     fps,
     startCamera,
     stopCamera,
+    toggleFacingMode,
     startSimulation,
     isSimulating,
   } = usePoseDetection(videoRef);
 
   const {
+    testType,
+    setTestType,
     workoutState,
-    repCount,
+    score,
     incompleteCount,
-    currentElbowAngle,
-    currentPlankAngle,
+    currentPrimaryAngle,
+    currentSecondaryAngle,
     depthProgress,
     feedbackMessage,
     feedbackType,
@@ -49,12 +69,22 @@ export const CameraWorkout: React.FC<CameraWorkoutProps> = ({
     cadenceRpm,
     formScore,
     activeSide,
+    peakJumpCm,
     startWorkout,
     pauseWorkout,
     resumeWorkout,
     finishWorkout,
     resetWorkout,
-  } = usePushUpCounter(landmarks);
+  } = useExerciseEngine(landmarks, activeTest);
+
+  // Sync test type
+  const handleSelectTest = (type: TestType) => {
+    setActiveTest(type);
+    setTestType(type);
+    if (isSimulating) {
+      startSimulation(type);
+    }
+  };
 
   // Auto-start camera when mounting
   useEffect(() => {
@@ -74,21 +104,37 @@ export const CameraWorkout: React.FC<CameraWorkoutProps> = ({
     }
   };
 
+  // Toggle fullscreen mode
+  const handleToggleFullscreen = () => {
+    if (!containerRef.current) return;
+    if (!document.fullscreenElement) {
+      containerRef.current.requestFullscreen?.().catch(() => {});
+      setIsFullscreen(true);
+    } else {
+      document.exitFullscreen?.().catch(() => {});
+      setIsFullscreen(false);
+    }
+  };
+
   // Finish workout & construct verified result
   const handleFinishWorkout = async () => {
     const biomechanics = finishWorkout();
+    const currentConfig = EXERCISE_CONFIGS[activeTest];
     
     // Calculate final percentile
     const percentileData = calculatePercentile(
-      repCount,
+      score,
       athlete.age,
-      athlete.gender
+      athlete.gender,
+      activeTest
     );
 
-    const verificationHash = `TL-${percentileData.percentileRounded}-${athlete.state.slice(0, 3).toUpperCase()}-${Math.random().toString(36).substring(2, 7).toUpperCase()}`;
+    const stateCode = athlete.state.slice(0, 3).toUpperCase();
+    const randomSalt = Math.random().toString(36).substring(2, 6).toUpperCase();
+    const verificationHash = `TL-${percentileData.percentileRounded}-${stateCode}-${randomSalt}`;
 
     const assessment: AssessmentResult = {
-      id: `ass_${Date.now()}`,
+      id: `ass_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
       athleteId: athlete.id,
       athleteName: athlete.fullName,
       age: athlete.age,
@@ -96,8 +142,9 @@ export const CameraWorkout: React.FC<CameraWorkoutProps> = ({
       state: athlete.state,
       district: athlete.district,
       sport: athlete.primarySport,
-      testType: 'pushups_standard',
-      repsCount: repCount,
+      testType: activeTest,
+      score: score,
+      repsCount: activeTest === 'pushups_standard' || activeTest === 'squats_standard' ? score : undefined,
       durationSeconds: Math.max(1, elapsedSeconds),
       percentile: percentileData.percentile,
       talentTier: percentileData.talentTier,
@@ -120,188 +167,212 @@ export const CameraWorkout: React.FC<CameraWorkoutProps> = ({
     startCamera();
   };
 
-  // If workout is completed, show the Verified Result Card!
-  if (completedAssessment) {
-    return (
-      <VerifiedResultCard
-        athlete={athlete}
-        assessment={completedAssessment}
-        onRetest={handleRetest}
-      />
-    );
-  }
+  const currentConfig = EXERCISE_CONFIGS[activeTest];
 
   return (
-    <div className="max-w-5xl mx-auto space-y-6">
+    <div className="space-y-6">
       
-      {/* Athlete Header Bar */}
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 p-4 rounded-2xl bg-card border border-card-border">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-brand/20 border border-brand/40 flex items-center justify-center text-brand font-bold">
-            <UserCheck className="w-5 h-5" />
-          </div>
-          <div>
-            <div className="flex items-center gap-2">
-              <h3 className="font-bold text-white text-base">{athlete.fullName}</h3>
-              <span className="text-xs px-2 py-0.5 rounded-full bg-slate-800 text-slate-300 font-mono">
-                {athlete.age}y • {athlete.gender}
-              </span>
-            </div>
-            <p className="text-xs text-slate-400">
-              {athlete.primarySport} • {athlete.state} ({athlete.district})
-            </p>
-          </div>
-        </div>
-
-        <button
-          onClick={onProfileEdit}
-          className="text-xs font-semibold text-brand hover:text-brand-400 underline underline-offset-4 transition-colors"
-        >
-          Edit Profile Details
-        </button>
-      </div>
-
-      {/* Main Camera Assessment Frame */}
-      <div className="relative aspect-video w-full max-h-[680px] bg-slate-950 rounded-3xl border-2 border-card-border overflow-hidden shadow-2xl flex items-center justify-center">
-        
-        {/* Realtime Video Stream */}
-        <video
-          ref={videoRef}
-          playsInline
-          muted
-          autoPlay
-          onLoadedMetadata={handleLoadedMetadata}
-          className={`w-full h-full object-cover transform -scale-x-100 ${
-            !cameraActive ? 'hidden' : 'block'
-          }`}
+      {/* If Workout is completed, display the Verified Credential Result Card */}
+      {completedAssessment ? (
+        <VerifiedResultCard
+          athlete={athlete}
+          assessment={completedAssessment}
+          onRetest={handleRetest}
         />
+      ) : (
+        <div className="space-y-6">
+          
+          {/* Multi-Exercise Selector Tabs */}
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3">
+            {(Object.keys(EXERCISE_CONFIGS) as TestType[]).map((key) => {
+              const cfg = EXERCISE_CONFIGS[key];
+              const isSelected = activeTest === key;
+              return (
+                <button
+                  key={key}
+                  onClick={() => handleSelectTest(key)}
+                  disabled={workoutState !== 'idle'}
+                  className={`p-3.5 rounded-2xl border text-left transition-all duration-200 flex flex-col justify-between ${
+                    isSelected
+                      ? 'bg-card border-brand/60 shadow-[0_0_20px_rgba(255,77,0,0.18)] text-white'
+                      : 'bg-card/40 border-card-border/70 hover:border-slate-700 text-slate-400 hover:text-slate-200'
+                  } ${workoutState !== 'idle' ? 'opacity-50 cursor-not-allowed' : ''}`}
+                >
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-[10px] uppercase font-mono font-bold tracking-wider px-2 py-0.5 rounded-full bg-slate-900 border border-slate-800 text-slate-400">
+                      {cfg.category}
+                    </span>
+                    {isSelected && (
+                      <span className="w-2 h-2 rounded-full bg-brand animate-pulse" />
+                    )}
+                  </div>
+                  <div>
+                    <h3 className={`text-sm font-bold ${isSelected ? 'text-white' : 'text-slate-300'}`}>
+                      {cfg.name}
+                    </h3>
+                    <p className="text-[11px] text-slate-400 mt-0.5 line-clamp-1">
+                      Target: {cfg.metricLabel}
+                    </p>
+                  </div>
+                </button>
+              );
+            })}
+          </div>
 
-        {/* AI MediaPipe Landmark Skeleton Canvas */}
-        {cameraActive && (
-          <PoseSkeletonCanvas
-            landmarks={landmarks}
-            currentElbowAngle={currentElbowAngle}
-            currentPlankAngle={currentPlankAngle}
-            activeSide={activeSide}
-            targetDepthReached={currentElbowAngle <= 90}
-            videoWidth={videoDimensions.width}
-            videoHeight={videoDimensions.height}
-          />
-        )}
+          {/* Camera Frame Container */}
+          <div 
+            ref={containerRef}
+            className="relative w-full aspect-[4/3] sm:aspect-[16/10] max-h-[640px] bg-slate-950 rounded-3xl overflow-hidden border-2 border-card-border shadow-2xl flex items-center justify-center"
+          >
+            
+            {/* Background Webcam Feed */}
+            <video
+              ref={videoRef}
+              autoPlay
+              playsInline
+              muted
+              onLoadedMetadata={handleLoadedMetadata}
+              className="absolute inset-0 w-full h-full object-cover transform scale-x-[-1]"
+            />
 
-        {/* Live Form HUD Overlay */}
-        {cameraActive && (
-          <LiveFormHUD
-            workoutState={workoutState}
-            repCount={repCount}
-            incompleteCount={incompleteCount}
-            currentElbowAngle={currentElbowAngle}
-            currentPlankAngle={currentPlankAngle}
-            depthProgress={depthProgress}
-            feedbackMessage={feedbackMessage}
-            feedbackType={feedbackType}
-            elapsedSeconds={elapsedSeconds}
-            cadenceRpm={cadenceRpm}
-            formScore={formScore}
-            fps={fps}
-            isSimulating={isSimulating}
-            onStart={startWorkout}
-            onPause={pauseWorkout}
-            onResume={resumeWorkout}
-            onFinish={handleFinishWorkout}
-            onReset={resetWorkout}
-            onToggleSimulation={() => {
-              if (isSimulating) {
-                startCamera();
-              } else {
-                startSimulation();
-              }
-            }}
-          />
-        )}
+            {/* AI Skeleton Overlay Canvas */}
+            <PoseSkeletonCanvas
+              landmarks={landmarks}
+              testType={activeTest}
+              currentPrimaryAngle={currentPrimaryAngle}
+              currentSecondaryAngle={currentSecondaryAngle}
+              activeSide={activeSide}
+              targetDepthReached={depthProgress >= 100}
+              videoWidth={videoDimensions.width}
+              videoHeight={videoDimensions.height}
+            />
 
-        {/* Loading MediaPipe Vision Model State */}
-        {isModelLoading && (
-          <div className="absolute inset-0 bg-slate-950/90 backdrop-blur-md flex flex-col items-center justify-center p-6 text-center space-y-4 z-30">
-            <div className="w-12 h-12 rounded-2xl border-4 border-brand border-t-transparent animate-spin" />
-            <div>
-              <h4 className="text-lg font-bold text-white">Initializing AI Pose Engine</h4>
-              <p className="text-xs text-slate-400 mt-1 max-w-sm">
-                Loading client-side MediaPipe Tasks Vision model directly into your browser...
-              </p>
+            {/* Interactive Live Form HUD Overlay */}
+            <LiveFormHUD
+              testType={activeTest}
+              workoutState={workoutState}
+              score={score}
+              incompleteCount={incompleteCount}
+              currentPrimaryAngle={currentPrimaryAngle}
+              currentSecondaryAngle={currentSecondaryAngle}
+              depthProgress={depthProgress}
+              feedbackMessage={feedbackMessage}
+              feedbackType={feedbackType}
+              elapsedSeconds={elapsedSeconds}
+              cadenceRpm={cadenceRpm}
+              formScore={formScore}
+              fps={fps}
+              isSimulating={isSimulating}
+              onStart={startWorkout}
+              onPause={pauseWorkout}
+              onResume={resumeWorkout}
+              onFinish={handleFinishWorkout}
+              onReset={resetWorkout}
+              onToggleSimulation={() => {
+                if (isSimulating) {
+                  startCamera();
+                } else {
+                  startSimulation(activeTest);
+                }
+              }}
+              onFlipCamera={toggleFacingMode}
+              onToggleFullscreen={handleToggleFullscreen}
+              isFullscreen={isFullscreen}
+            />
+
+            {/* Loading AI State */}
+            {isModelLoading && (
+              <div className="absolute inset-0 bg-slate-950/90 backdrop-blur-md flex flex-col items-center justify-center p-6 text-center z-30 space-y-4">
+                <div className="relative w-14 h-14">
+                  <div className="w-14 h-14 rounded-full border-4 border-brand/20 border-t-brand animate-spin" />
+                  <Activity className="w-6 h-6 text-brand absolute inset-0 m-auto" />
+                </div>
+                <div className="space-y-1">
+                  <h3 className="text-base font-bold text-white uppercase tracking-wider font-mono">
+                    Initializing Edge AI Pose Engine...
+                  </h3>
+                  <p className="text-xs text-slate-400 max-w-sm">
+                    Loading MediaPipe Tasks Vision WebAssembly model directly into browser memory.
+                  </p>
+                </div>
+              </div>
+            )}
+
+            {/* Camera Permission Denied / Error State */}
+            {hasCameraPermission === false && !isSimulating && (
+              <div className="absolute inset-0 bg-slate-950/95 backdrop-blur-md flex flex-col items-center justify-center p-6 text-center z-30 space-y-4">
+                <div className="w-12 h-12 rounded-2xl bg-amber-500/20 border border-amber-500/40 flex items-center justify-center text-amber-400">
+                  <CameraOff className="w-6 h-6" />
+                </div>
+                <div className="space-y-1">
+                  <h3 className="text-lg font-bold text-white">Camera Access Required</h3>
+                  <p className="text-xs text-slate-400 max-w-md">
+                    Please allow camera permissions in your browser to run live pose analysis, or test right now using our AI Simulation Runner.
+                  </p>
+                </div>
+                <div className="flex flex-col sm:flex-row items-center gap-3">
+                  <Button
+                    onClick={() => startCamera()}
+                    variant="outline"
+                    size="sm"
+                    leftIcon={<RefreshCw className="w-4 h-4" />}
+                  >
+                    Retry Camera
+                  </Button>
+                  <Button
+                    onClick={() => startSimulation(activeTest)}
+                    variant="primary"
+                    size="sm"
+                    leftIcon={<MonitorPlay className="w-4 h-4" />}
+                  >
+                    Run AI Simulation Demo
+                  </Button>
+                </div>
+              </div>
+            )}
+
+          </div>
+
+          {/* Exercise Instructions & Biomechanics Checklist Box */}
+          <div className="p-4 sm:p-5 rounded-3xl bg-card border border-card-border grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <div className="flex items-center gap-2 text-xs font-mono font-bold text-white uppercase tracking-wider">
+                <Info className="w-4 h-4 text-cyber" />
+                <span>Test Instructions: {currentConfig.name}</span>
+              </div>
+              <ul className="space-y-1.5 text-xs text-slate-300">
+                {currentConfig.instructions.map((inst, i) => (
+                  <li key={i} className="flex items-start gap-2">
+                    <span className="text-brand font-bold font-mono shrink-0">{i + 1}.</span>
+                    <span>{inst}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            <div className="p-3.5 rounded-2xl bg-slate-950/70 border border-card-border space-y-2 flex flex-col justify-between">
+              <div className="flex items-center justify-between text-xs">
+                <span className="font-mono text-slate-400 uppercase">Active Athlete</span>
+                <button
+                  onClick={onProfileEdit}
+                  className="text-brand hover:text-brand-400 text-xs font-bold transition-colors"
+                >
+                  Edit Profile
+                </button>
+              </div>
+              <div className="space-y-0.5">
+                <p className="text-sm font-bold text-white">{athlete.fullName} ({athlete.age} yrs)</p>
+                <p className="text-xs text-slate-400 font-mono">{athlete.district}, {athlete.state} · {athlete.primarySport}</p>
+              </div>
+              <div className="text-[11px] text-slate-500 font-mono pt-1 border-t border-slate-800 flex items-center justify-between">
+                <span>National Standards: SAI Division</span>
+                <span className="text-emerald-400 font-bold">100% Client-Side AI</span>
+              </div>
             </div>
           </div>
-        )}
 
-        {/* Camera Permission Denied / No Webcam State */}
-        {!isModelLoading && hasCameraPermission === false && (
-          <div className="absolute inset-0 bg-slate-950/95 backdrop-blur-lg flex flex-col items-center justify-center p-6 text-center space-y-6 z-30">
-            <div className="w-16 h-16 rounded-3xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-center text-amber-400">
-              <CameraOff className="w-8 h-8" />
-            </div>
-
-            <div className="max-w-md space-y-2">
-              <h4 className="text-xl font-bold text-white">Camera Access Required</h4>
-              <p className="text-sm text-slate-400">
-                To perform real-time push-up counting and biomechanics verification, please allow camera permissions in your browser.
-              </p>
-            </div>
-
-            <div className="flex flex-col sm:flex-row items-center gap-3">
-              <Button
-                onClick={startCamera}
-                variant="primary"
-                size="md"
-                leftIcon={<RefreshCw className="w-4 h-4" />}
-              >
-                Retry Camera Access
-              </Button>
-
-              <Button
-                onClick={startSimulation}
-                variant="secondary"
-                size="md"
-                leftIcon={<MonitorPlay className="w-4 h-4" />}
-              >
-                Run AI Push-Up Simulation Demo
-              </Button>
-            </div>
-          </div>
-        )}
-
-        {/* Model Error Fallback */}
-        {modelError && (
-          <div className="absolute bottom-4 left-4 right-4 p-4 rounded-xl bg-amber-950/90 border border-amber-500/40 text-amber-200 text-xs flex items-center justify-between z-30">
-            <div className="flex items-center gap-2">
-              <AlertCircle className="w-4 h-4 text-amber-400 shrink-0" />
-              <span>{modelError}</span>
-            </div>
-            <button
-              onClick={startSimulation}
-              className="px-3 py-1 bg-amber-500 text-slate-950 font-bold rounded-lg hover:bg-amber-400 text-xs"
-            >
-              Use Simulation
-            </button>
-          </div>
-        )}
-
-      </div>
-
-      {/* Protocol Guidance Banner */}
-      <div className="p-4 rounded-2xl bg-card/60 border border-card-border text-xs text-slate-400 grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <div className="flex items-start gap-2.5">
-          <span className="w-5 h-5 rounded-full bg-brand/20 text-brand font-bold flex items-center justify-center shrink-0">1</span>
-          <p><strong className="text-slate-200">Side Angle View:</strong> Position camera perpendicular to your side for accurate 90° elbow tracking.</p>
         </div>
-        <div className="flex items-start gap-2.5">
-          <span className="w-5 h-5 rounded-full bg-brand/20 text-brand font-bold flex items-center justify-center shrink-0">2</span>
-          <p><strong className="text-slate-200">Full Range of Motion:</strong> Lower until elbow bends &lt; 90°, then push up to full lockout &gt; 155°.</p>
-        </div>
-        <div className="flex items-start gap-2.5">
-          <span className="w-5 h-5 rounded-full bg-brand/20 text-brand font-bold flex items-center justify-center shrink-0">3</span>
-          <p><strong className="text-slate-200">Plank Stability:</strong> Keep torso aligned from shoulders to ankles to maintain 100% form score.</p>
-        </div>
-      </div>
+      )}
 
     </div>
   );

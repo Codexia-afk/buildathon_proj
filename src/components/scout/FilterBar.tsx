@@ -1,5 +1,5 @@
 import React from 'react';
-import { Search, Filter, Bookmark, SlidersHorizontal, RotateCcw } from 'lucide-react';
+import { Search, Filter, Bookmark, SlidersHorizontal, RotateCcw, Activity } from 'lucide-react';
 import { ScoutFilterState } from '../../types';
 
 interface FilterBarProps {
@@ -28,6 +28,14 @@ const SPORTS_FILTER = [
   'Hockey',
   'Badminton',
   'Weightlifting'
+];
+
+const TEST_TYPES_FILTER = [
+  { value: '', label: 'All Assessment Tests' },
+  { value: 'pushups_standard', label: 'Push-Ups (Upper Body)' },
+  { value: 'squats_standard', label: 'Squats (Lower Body)' },
+  { value: 'plank_hold', label: 'Plank Hold (Core)' },
+  { value: 'vertical_jump', label: 'Vertical Jump (Power)' },
 ];
 
 export const FilterBar: React.FC<FilterBarProps> = ({
@@ -83,16 +91,34 @@ export const FilterBar: React.FC<FilterBarProps> = ({
           >
             <option value="percentile_desc">National Percentile (High to Low)</option>
             <option value="percentile_asc">National Percentile (Low to High)</option>
-            <option value="reps_desc">Push-Up Rep Count (Max First)</option>
+            <option value="score_desc">Raw Score (Max First)</option>
             <option value="date_desc">Latest Verified Assessment</option>
           </select>
         </div>
 
       </div>
 
-      {/* Filter Row: Sport, State, Min Percentile */}
+      {/* Filter Row: Test Type, Sport, State, Min Percentile */}
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3 pt-3 border-t border-card-border/60">
         
+        {/* Test Type Filter */}
+        <div>
+          <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-1">
+            Assessment Test
+          </label>
+          <select
+            value={filters.testType || ''}
+            onChange={(e) => update({ testType: e.target.value })}
+            className="w-full px-3 py-2 rounded-xl bg-slate-900/80 border border-card-border focus:border-brand text-white text-xs font-semibold"
+          >
+            {TEST_TYPES_FILTER.map((t) => (
+              <option key={t.value} value={t.value}>
+                {t.label}
+              </option>
+            ))}
+          </select>
+        </div>
+
         {/* Sport Filter */}
         <div>
           <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-1">
@@ -150,22 +176,22 @@ export const FilterBar: React.FC<FilterBarProps> = ({
           />
         </div>
 
-        {/* Results Counter & Reset */}
-        <div className="flex items-end justify-between gap-2">
-          <div className="text-xs text-slate-400">
-            Showing <strong className="text-white font-mono">{totalResults}</strong> athletes
-          </div>
+      </div>
 
-          <button
-            type="button"
-            onClick={onReset}
-            className="px-3 py-2 rounded-xl text-xs text-slate-400 hover:text-white hover:bg-slate-800 transition-colors flex items-center gap-1.5"
-          >
-            <RotateCcw className="w-3.5 h-3.5" />
-            <span>Reset</span>
-          </button>
+      {/* Results Counter & Reset */}
+      <div className="flex items-center justify-between pt-2 border-t border-card-border/40 text-xs text-slate-400">
+        <div>
+          Showing <strong className="text-white font-mono">{totalResults}</strong> verified athlete assessments
         </div>
 
+        <button
+          type="button"
+          onClick={onReset}
+          className="px-3 py-1.5 rounded-xl text-xs text-slate-400 hover:text-white hover:bg-slate-800 transition-colors flex items-center gap-1.5"
+        >
+          <RotateCcw className="w-3.5 h-3.5" />
+          <span>Reset Filters</span>
+        </button>
       </div>
 
     </div>

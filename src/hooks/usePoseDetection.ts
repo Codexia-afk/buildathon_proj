@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { FilesetResolver, PoseLandmarker, NormalizedLandmark } from '@mediapipe/tasks-vision';
+import { TestType } from '../types';
 
 export interface PoseDetectionState {
   isModelLoading: boolean;
@@ -8,6 +9,7 @@ export interface PoseDetectionState {
   landmarks: NormalizedLandmark[] | null;
   cameraActive: boolean;
   fps: number;
+  facingMode: 'user' | 'environment';
 }
 
 export function usePoseDetection(videoRef: React.RefObject<HTMLVideoElement>) {
@@ -17,6 +19,8 @@ export function usePoseDetection(videoRef: React.RefObject<HTMLVideoElement>) {
   const [cameraActive, setCameraActive] = useState<boolean>(false);
   const [landmarks, setLandmarks] = useState<NormalizedLandmark[] | null>(null);
   const [fps, setFps] = useState<number>(0);
+  const [isSimulating, setIsSimulating] = useState<boolean>(false);
+  const [facingMode, setFacingMode] = useState<'user' | 'environment'>('user');
 
   const poseLandmarkerRef = useRef<PoseLandmarker | null>(null);
   const requestAnimationRef = useRef<number | null>(null);
@@ -24,6 +28,8 @@ export function usePoseDetection(videoRef: React.RefObject<HTMLVideoElement>) {
   const frameCountRef = useRef<number>(0);
   const lastFpsUpdateRef = useRef<number>(Date.now());
   const isSimulatingRef = useRef<boolean>(false);
+  const simulationIntervalRef = useRef<NodeJS.Timeout | null>(null);
+  const streamRef = useRef<MediaStream | null>(null);
 
   // Initialize MediaPipe PoseLandmarker
   useEffect(() => {
@@ -59,7 +65,7 @@ export function usePoseDetection(videoRef: React.RefObject<HTMLVideoElement>) {
       } catch (err) {
         console.error("Failed to load MediaPipe Pose Landmarker:", err);
         if (isMounted) {
-          setModelError("Could not load AI vision model. Please check internet connection or switch to simulation mode.");
+          setModelError("Could not load AI vision model. Please check internet connection or switch to AI simulation mode.");
           setIsModelLoading(false);
         }
       }
@@ -112,123 +118,194 @@ export function usePoseDetection(videoRef: React.RefObject<HTMLVideoElement>) {
             lastFpsUpdateRef.current = now;
           }
         } catch (e) {
-          // Frame skip or timestamp error
+          console.warn("Inference error:", e);
         }
       }
     }
 
-    requestAnimationRef.current = requestAnimationFrame(processVideoFrame);
+    if (!isSimulatingRef.current) {
+      requestAnimationRef.current = requestAnimationFrame(processVideoFrame);
+    }
   }, [videoRef]);
 
-  // Start webcam
-  const startCamera = useCallback(async () => {
+  // Start Camera Stream
+  const startCamera = useCallback(async (desiredFacingMode: 'user' | 'environment' = facingMode) => {
     try {
-      setHasCameraPermission(null);
+      if (simulationIntervalRef.current) {
+        clearInterval(simulationIntervalRef.current);
+        simulationIntervalRef.current = null;
+      }
       isSimulatingRef.current = false;
+      setIsSimulating(false);
 
-      const constraints: MediaStreamConstraints = {
+      if (streamRef.current) {
+        streamRef.current.getTracks().forEach((track) => track.stop());
+      }
+
+      const stream = await navigator.mediaDevices.getUserMedia({
         video: {
-          width: { ideal: 1280 },
-          height: { ideal: 720 },
-          facingMode: 'user',
+          facingMode: desiredFacingMode,
+          width: { ideal: 640 },
+          height: { ideal: 480 },
+          frameRate: { ideal: 30 },
         },
         audio: false,
-      };
+      });
 
-      const stream = await navigator.mediaDevices.getUserMedia(constraints);
+      streamRef.current = stream;
 
       if (videoRef.current) {
         videoRef.current.srcObject = stream;
-        await videoRef.current.play();
-        setCameraActive(true);
-        setHasCameraPermission(true);
-
-        if (requestAnimationRef.current) {
-          cancelAnimationFrame(requestAnimationRef.current);
-        }
-        requestAnimationRef.current = requestAnimationFrame(processVideoFrame);
+        videoRef.current.onloadedmetadata = () => {
+          videoRef.current?.play();
+          setCameraActive(true);
+          setHasCameraPermission(true);
+          requestAnimationRef.current = requestAnimationFrame(processVideoFrame);
+        };
       }
-    } catch (err: unknown) {
+    } catch (err) {
       console.warn("Camera access denied or unavailable:", err);
       setHasCameraPermission(false);
       setCameraActive(false);
     }
-  }, [processVideoFrame, videoRef]);
+  }, [processVideoFrame, videoRef, facingMode]);
 
-  // Stop webcam
+  // Stop Camera Stream
   const stopCamera = useCallback(() => {
-    if (videoRef.current && videoRef.current.srcObject) {
-      const stream = videoRef.current.srcObject as MediaStream;
-      stream.getTracks().forEach((track) => track.stop());
+    if (streamRef.current) {
+      streamRef.current.getTracks().forEach((track) => track.stop());
+      streamRef.current = null;
+    }
+    if (videoRef.current) {
       videoRef.current.srcObject = null;
     }
     if (requestAnimationRef.current) {
       cancelAnimationFrame(requestAnimationRef.current);
+      requestAnimationRef.current = null;
+    }
+    if (simulationIntervalRef.current) {
+      clearInterval(simulationIntervalRef.current);
+      simulationIntervalRef.current = null;
     }
     setCameraActive(false);
     setLandmarks(null);
-    isSimulatingRef.current = false;
   }, [videoRef]);
 
-  // Synthetic Landmark Simulation Runner (for instant testing or devices without camera)
-  const startSimulation = useCallback(() => {
+  // Flip Camera between front & rear
+  const toggleFacingMode = useCallback(() => {
+    const nextMode = facingMode === 'user' ? 'environment' : 'user';
+    setFacingMode(nextMode);
+    if (cameraActive) {
+      startCamera(nextMode);
+    }
+  }, [facingMode, cameraActive, startCamera]);
+
+  // Multi-Exercise AI Simulation Engine
+  const startSimulation = useCallback((activeTestType: TestType = 'pushups_standard') => {
     stopCamera();
     isSimulatingRef.current = true;
+    setIsSimulating(true);
     setCameraActive(true);
     setHasCameraPermission(true);
+    setFps(30);
 
-    let progress = 0; // 0 (up) -> 1 (down) -> 2 (back up)
-    let repCycleSpeed = 0.025;
+    let frame = 0;
 
-    const simulateLoop = () => {
-      if (!isSimulatingRef.current) return;
+    simulationIntervalRef.current = setInterval(() => {
+      frame += 1;
+      const t = frame * 0.05; // time progression
 
-      progress += repCycleSpeed;
-      if (progress >= 2) {
-        progress = 0;
-      }
-
-      // Harmonic oscillation between up (elbow 165 deg) and down (elbow 75 deg)
-      const phase = progress <= 1 ? progress : 2 - progress;
-      // y-offset for chest/head descending
-      const chestY = 0.45 + phase * 0.18;
-      const headY = 0.35 + phase * 0.18;
-      const shoulderY = 0.48 + phase * 0.18;
-      const elbowX = 0.42 + phase * 0.08;
-      const elbowY = 0.58 + phase * 0.06;
-
-      // Synthetic 33 MediaPipe pose landmarks
-      const mockLandmarks: NormalizedLandmark[] = Array(33).fill(null).map((_, i) => ({
+      const fakeLandmarks: NormalizedLandmark[] = Array.from({ length: 33 }, () => ({
         x: 0.5,
         y: 0.5,
         z: 0,
         visibility: 0.95,
       }));
 
-      // Key landmarks for pushup side profile (right side)
-      mockLandmarks[0] = { x: 0.28, y: headY, z: 0, visibility: 0.98 }; // Nose
-      mockLandmarks[12] = { x: 0.38, y: shoulderY, z: 0, visibility: 0.98 }; // Right Shoulder
-      mockLandmarks[14] = { x: elbowX, y: elbowY, z: 0, visibility: 0.98 }; // Right Elbow
-      mockLandmarks[16] = { x: 0.40, y: 0.72, z: 0, visibility: 0.98 }; // Right Wrist
-      mockLandmarks[24] = { x: 0.58, y: 0.52 + phase * 0.12, z: 0, visibility: 0.98 }; // Right Hip
-      mockLandmarks[26] = { x: 0.70, y: 0.62 + phase * 0.06, z: 0, visibility: 0.98 }; // Right Knee
-      mockLandmarks[28] = { x: 0.82, y: 0.72, z: 0, visibility: 0.98 }; // Right Ankle
+      // Head
+      fakeLandmarks[0] = { x: 0.28, y: 0.42, z: 0, visibility: 0.98 };
 
-      // Left side mirrored slightly
-      mockLandmarks[11] = { x: 0.36, y: shoulderY, z: 0.05, visibility: 0.85 };
-      mockLandmarks[13] = { x: elbowX - 0.02, y: elbowY, z: 0.05, visibility: 0.85 };
-      mockLandmarks[15] = { x: 0.38, y: 0.72, z: 0.05, visibility: 0.85 };
-      mockLandmarks[23] = { x: 0.56, y: 0.52 + phase * 0.12, z: 0.05, visibility: 0.85 };
-      mockLandmarks[25] = { x: 0.68, y: 0.62 + phase * 0.06, z: 0.05, visibility: 0.85 };
-      mockLandmarks[27] = { x: 0.80, y: 0.72, z: 0.05, visibility: 0.85 };
+      if (activeTestType === 'pushups_standard') {
+        // Push-up cycle (period ~2.5 seconds)
+        const progress = (Math.sin(t * 2.5) + 1) / 2; // 0 (bottom) to 1 (top)
+        const shoulderY = 0.55 - progress * 0.15; // 0.40 (top) to 0.55 (bottom)
+        const hipY = 0.52 - progress * 0.14;
+        const elbowX = 0.38 - (1 - progress) * 0.05;
+        const elbowY = 0.52 + (1 - progress) * 0.04;
 
-      setLandmarks(mockLandmarks);
-      setFps(30);
+        fakeLandmarks[12] = { x: 0.35, y: shoulderY, z: 0, visibility: 0.99 }; // Right shoulder
+        fakeLandmarks[14] = { x: elbowX, y: elbowY, z: 0, visibility: 0.99 };  // Right elbow
+        fakeLandmarks[16] = { x: 0.36, y: 0.68, z: 0, visibility: 0.99 };     // Right wrist
+        fakeLandmarks[24] = { x: 0.58, y: hipY, z: 0, visibility: 0.99 };      // Right hip
+        fakeLandmarks[26] = { x: 0.72, y: hipY + 0.05, z: 0, visibility: 0.98 }; // Right knee
+        fakeLandmarks[28] = { x: 0.84, y: 0.70, z: 0, visibility: 0.99 };     // Right ankle
+      } 
+      else if (activeTestType === 'squats_standard') {
+        // Squat cycle (period ~2.8 seconds)
+        const progress = (Math.sin(t * 2.2) + 1) / 2; // 0 (bottom parallel) to 1 (standing)
+        const hipY = 0.62 - progress * 0.22; // 0.40 (standing) to 0.62 (squat depth)
+        const shoulderY = hipY - 0.25;
+        const kneeY = 0.65;
+        const kneeX = 0.48 + (1 - progress) * 0.04;
 
-      requestAnimationRef.current = requestAnimationFrame(simulateLoop);
-    };
+        fakeLandmarks[12] = { x: 0.48, y: shoulderY, z: 0, visibility: 0.99 };
+        fakeLandmarks[14] = { x: 0.42, y: shoulderY + 0.1, z: 0, visibility: 0.99 };
+        fakeLandmarks[16] = { x: 0.45, y: shoulderY + 0.2, z: 0, visibility: 0.99 };
+        fakeLandmarks[24] = { x: 0.50, y: hipY, z: 0, visibility: 0.99 };
+        fakeLandmarks[26] = { x: kneeX, y: kneeY, z: 0, visibility: 0.99 };
+        fakeLandmarks[28] = { x: 0.50, y: 0.88, z: 0, visibility: 0.99 };
+      }
+      else if (activeTestType === 'plank_hold') {
+        // Plank hold: solid steady straight line with minor natural breathing oscillation
+        const breath = Math.sin(t * 1.2) * 0.004;
+        fakeLandmarks[12] = { x: 0.32, y: 0.50 + breath, z: 0, visibility: 0.99 };
+        fakeLandmarks[14] = { x: 0.32, y: 0.65, z: 0, visibility: 0.99 };
+        fakeLandmarks[16] = { x: 0.38, y: 0.65, z: 0, visibility: 0.99 };
+        fakeLandmarks[24] = { x: 0.56, y: 0.51 + breath, z: 0, visibility: 0.99 };
+        fakeLandmarks[26] = { x: 0.70, y: 0.53 + breath, z: 0, visibility: 0.98 };
+        fakeLandmarks[28] = { x: 0.84, y: 0.55, z: 0, visibility: 0.99 };
+      }
+      else if (activeTestType === 'vertical_jump') {
+        // Vertical jump cycle: stand (2s) -> dip (1s) -> explode airborne (0.6s) -> land
+        const cycle = (t % 4.0);
+        let hipY = 0.50;
+        let ankleY = 0.85;
+        let kneeY = 0.68;
 
-    requestAnimationRef.current = requestAnimationFrame(simulateLoop);
+        if (cycle < 1.5) {
+          // Standing ready
+          hipY = 0.48;
+          ankleY = 0.85;
+          kneeY = 0.67;
+        } else if (cycle < 2.3) {
+          // Squat dip
+          hipY = 0.62;
+          ankleY = 0.85;
+          kneeY = 0.70;
+        } else if (cycle < 3.0) {
+          // Airborne jump
+          const jumpPhase = (cycle - 2.3) / 0.7; // 0 to 1
+          const jumpOffset = Math.sin(jumpPhase * Math.PI) * 0.22;
+          hipY = 0.48 - jumpOffset;
+          kneeY = 0.67 - jumpOffset;
+          ankleY = 0.85 - jumpOffset;
+        } else {
+          // Landed
+          hipY = 0.52;
+          ankleY = 0.85;
+          kneeY = 0.68;
+        }
+
+        fakeLandmarks[12] = { x: 0.50, y: hipY - 0.25, z: 0, visibility: 0.99 };
+        fakeLandmarks[14] = { x: 0.45, y: hipY - 0.15, z: 0, visibility: 0.99 };
+        fakeLandmarks[16] = { x: 0.48, y: hipY, z: 0, visibility: 0.99 };
+        fakeLandmarks[24] = { x: 0.50, y: hipY, z: 0, visibility: 0.99 };
+        fakeLandmarks[26] = { x: 0.50, y: kneeY, z: 0, visibility: 0.99 };
+        fakeLandmarks[28] = { x: 0.50, y: ankleY, z: 0, visibility: 0.99 };
+      }
+
+      setLandmarks(fakeLandmarks);
+    }, 33);
   }, [stopCamera]);
 
   return {
@@ -238,9 +315,11 @@ export function usePoseDetection(videoRef: React.RefObject<HTMLVideoElement>) {
     cameraActive,
     landmarks,
     fps,
+    isSimulating,
+    facingMode,
     startCamera,
     stopCamera,
+    toggleFacingMode,
     startSimulation,
-    isSimulating: isSimulatingRef.current,
   };
 }

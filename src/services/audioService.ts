@@ -1,5 +1,8 @@
 class SoundManager {
   private ctx: AudioContext | null = null;
+  private voiceEnabled: boolean = true;
+  private lastSpokenTime: number = 0;
+  private lastSpokenPhrase: string = '';
 
   private initContext() {
     if (!this.ctx && typeof window !== 'undefined') {
@@ -13,7 +16,15 @@ class SoundManager {
     }
   }
 
-  // Chime when down position (< 90 deg) is reached
+  setVoiceEnabled(enabled: boolean) {
+    this.voiceEnabled = enabled;
+  }
+
+  isVoiceEnabled(): boolean {
+    return this.voiceEnabled;
+  }
+
+  // Chime when target depth position is reached
   playBottomReach() {
     try {
       this.initContext();
@@ -35,11 +46,11 @@ class SoundManager {
       osc.start();
       osc.stop(this.ctx.currentTime + 0.09);
     } catch {
-      // Audio autoplay may be disabled until interaction
+      // Audio autoplay may be disabled until user gesture
     }
   }
 
-  // Crisp sports chime when a rep successfully completes (> 160 deg)
+  // Crisp sports chime when a rep successfully completes
   playRepCounted() {
     try {
       this.initContext();
@@ -65,7 +76,7 @@ class SoundManager {
     }
   }
 
-  // Gentle double warning tone when form sags (e.g. hip drops)
+  // Tone when form sags (e.g. hip drops or knees cave)
   playFormWarning() {
     try {
       this.initContext();
@@ -86,6 +97,32 @@ class SoundManager {
       
       osc.start();
       osc.stop(this.ctx.currentTime + 0.14);
+    } catch {
+      // Ignore
+    }
+  }
+
+  // Jump sound
+  playJumpTakeoff() {
+    try {
+      this.initContext();
+      if (!this.ctx) return;
+      
+      const osc = this.ctx.createOscillator();
+      const gain = this.ctx.createGain();
+      
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(300, this.ctx.currentTime);
+      osc.frequency.exponentialRampToValueAtTime(900, this.ctx.currentTime + 0.2);
+      
+      gain.gain.setValueAtTime(0.15, this.ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + 0.22);
+      
+      osc.connect(gain);
+      gain.connect(this.ctx.destination);
+      
+      osc.start();
+      osc.stop(this.ctx.currentTime + 0.22);
     } catch {
       // Ignore
     }
@@ -117,6 +154,31 @@ class SoundManager {
       });
     } catch {
       // Ignore
+    }
+  }
+
+  // Real-time AI Voice Coach using SpeechSynthesis API
+  speak(text: string, priority: boolean = false) {
+    if (!this.voiceEnabled) return;
+    if (typeof window === 'undefined' || !('speechSynthesis' in window)) return;
+
+    const now = Date.now();
+    // Debounce non-priority phrases by 2.2 seconds to prevent speech queue overlap
+    if (!priority && now - this.lastSpokenTime < 2200) return;
+    if (!priority && this.lastSpokenPhrase === text && now - this.lastSpokenTime < 4500) return;
+
+    try {
+      window.speechSynthesis.cancel(); // Clear backlog
+      const utterance = new SpeechSynthesisUtterance(text);
+      utterance.rate = 1.1; // Slightly punchy cadence for athletic training
+      utterance.pitch = 1.05;
+      utterance.volume = 0.9;
+      
+      window.speechSynthesis.speak(utterance);
+      this.lastSpokenTime = now;
+      this.lastSpokenPhrase = text;
+    } catch {
+      // SpeechSynthesis may fail silently on restricted browser policies
     }
   }
 }

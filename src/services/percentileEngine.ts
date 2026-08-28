@@ -1,9 +1,82 @@
 import benchmarkDataRaw from '../data/benchmarks.json';
-import { BenchmarkDistribution, Gender, TalentTier } from '../types';
+import { BenchmarkDistribution, Gender, TalentTier, TestType, ExerciseConfig } from '../types';
 
-const benchmarkData = benchmarkDataRaw as BenchmarkDistribution;
+export const EXERCISE_CONFIGS: Record<TestType, ExerciseConfig> = {
+  pushups_standard: {
+    id: 'pushups_standard',
+    name: 'Standard Push-Ups',
+    shortName: 'Push-Ups',
+    category: 'Upper Body',
+    iconName: 'Activity',
+    metricLabel: 'Reps Completed',
+    unit: 'reps',
+    description: 'Measures upper body muscular endurance and core stability.',
+    standardDurationSec: 60,
+    instructions: [
+      'Position camera sideways with full body in view.',
+      'Maintain a rigid straight plank line (155°-185°).',
+      'Lower chest until elbows bend to 90° or deeper.',
+      'Push up to full arm lockout (>155°) to count each rep.'
+    ]
+  },
+  squats_standard: {
+    id: 'squats_standard',
+    name: 'Deep Bodyweight Squats',
+    shortName: 'Squats',
+    category: 'Lower Body',
+    iconName: 'Flame',
+    metricLabel: 'Reps Completed',
+    unit: 'reps',
+    description: 'Assesses lower body quadriceps, hamstring, and glute power.',
+    standardDurationSec: 60,
+    instructions: [
+      'Stand facing 45° or side to the camera.',
+      'Feet shoulder-width apart, arms held forward or crossed.',
+      'Descend until hip crease is below knee level (knee angle <= 90°).',
+      'Stand fully upright with hips extended (>160°) for clean count.'
+    ]
+  },
+  plank_hold: {
+    id: 'plank_hold',
+    name: 'Forearm Plank Hold',
+    shortName: 'Plank',
+    category: 'Core',
+    iconName: 'ShieldCheck',
+    metricLabel: 'Hold Duration',
+    unit: 'sec',
+    description: 'Measures deep core isometric endurance and spinal stability.',
+    standardDurationSec: 120,
+    instructions: [
+      'Assume a solid forearm plank position with body in profile.',
+      'Keep shoulders, hips, and ankles in a straight line.',
+      'Avoid sagging hips (<145°) or lifting hips high (>200°).',
+      'Hold the posture as long as possible until failure.'
+    ]
+  },
+  vertical_jump: {
+    id: 'vertical_jump',
+    name: 'Vertical Jump Power',
+    shortName: 'Vert Jump',
+    category: 'Power',
+    iconName: 'Zap',
+    metricLabel: 'Max Jump Height',
+    unit: 'cm',
+    description: 'Evaluates explosive leg power and fast-twitch muscle recruitment.',
+    standardDurationSec: 30,
+    instructions: [
+      'Stand 6-8 feet away in clear camera view.',
+      'Assume standing position, perform countermovement dip.',
+      'Explode upwards with maximum power.',
+      'AI calculates flight hang time and vertical jump height in cm.'
+    ]
+  }
+};
 
 export interface PercentileResult {
+  testId: TestType;
+  testName: string;
+  unit: string;
+  score: number;
   percentile: number; // e.g. 88.4
   percentileRounded: number; // e.g. 88
   talentTier: TalentTier;
@@ -11,42 +84,45 @@ export interface PercentileResult {
   expectedMedian: number;
   eliteThreshold: number; // 90th percentile mark
   nationalRecord: number;
-  repsToNextTier: number;
+  scoreToNextTier: number;
   cohortComparisonText: string;
 }
 
 export function calculatePercentile(
-  reps: number,
+  score: number,
   age: number,
-  gender: Gender
+  gender: Gender,
+  testType: TestType = 'pushups_standard'
 ): PercentileResult {
   const safeGender = gender === 'female' ? 'female' : 'male';
+  const testDist = (benchmarkDataRaw.tests as Record<string, BenchmarkDistribution>)[testType] || benchmarkDataRaw.tests.pushups_standard;
+  const config = EXERCISE_CONFIGS[testType] || EXERCISE_CONFIGS.pushups_standard;
   
   // Locate age bracket
-  const bracket = benchmarkData.brackets.find(
+  const bracket = testDist.brackets.find(
     (b) => age >= b.minAge && age <= b.maxAge
-  ) || benchmarkData.brackets[benchmarkData.brackets.length - 1];
+  ) || testDist.brackets[testDist.brackets.length - 1];
 
   const stats = bracket[safeGender];
   
   // Percentile anchors
   const points = [
-    { p: 0, reps: 0 },
-    { p: 10, reps: stats.p10 },
-    { p: 25, reps: stats.p25 },
-    { p: 50, reps: stats.p50 },
-    { p: 75, reps: stats.p75 },
-    { p: 90, reps: stats.p90 },
-    { p: 95, reps: stats.p95 },
-    { p: 99, reps: stats.p99 },
-    { p: 100, reps: stats.nationalRecord },
+    { p: 0, val: 0 },
+    { p: 10, val: stats.p10 },
+    { p: 25, val: stats.p25 },
+    { p: 50, val: stats.p50 },
+    { p: 75, val: stats.p75 },
+    { p: 90, val: stats.p90 },
+    { p: 95, val: stats.p95 },
+    { p: 99, val: stats.p99 },
+    { p: 100, val: stats.nationalRecord },
   ];
 
   let rawPercentile = 0;
 
-  if (reps <= 0) {
+  if (score <= 0) {
     rawPercentile = 1.0;
-  } else if (reps >= stats.nationalRecord) {
+  } else if (score >= stats.nationalRecord) {
     rawPercentile = 99.9;
   } else {
     // Piecewise linear interpolation between percentile anchors
@@ -54,8 +130,8 @@ export function calculatePercentile(
       const lower = points[i];
       const upper = points[i + 1];
 
-      if (reps >= lower.reps && reps <= upper.reps) {
-        const ratio = (reps - lower.reps) / Math.max(1, upper.reps - lower.reps);
+      if (score >= lower.val && score <= upper.val) {
+        const ratio = (score - lower.val) / Math.max(0.1, upper.val - lower.val);
         rawPercentile = lower.p + ratio * (upper.p - lower.p);
         break;
       }
@@ -68,26 +144,30 @@ export function calculatePercentile(
 
   // Determine Talent Tier
   let talentTier: TalentTier = 'Developing Talent (Base Tier)';
-  let repsToNextTier = Math.max(1, stats.p25 - reps);
+  let scoreToNextTier = Math.max(1, Math.round(stats.p25 - score));
 
   if (clampedPercentile >= 95) {
     talentTier = 'National Elite Prospect (Top 5%)';
-    repsToNextTier = Math.max(0, stats.p99 - reps);
+    scoreToNextTier = Math.max(0, Math.round(stats.p99 - score));
   } else if (clampedPercentile >= 85) {
     talentTier = 'State Level Contender (Top 15%)';
-    repsToNextTier = Math.max(1, stats.p95 - reps);
+    scoreToNextTier = Math.max(1, Math.round(stats.p95 - score));
   } else if (clampedPercentile >= 70) {
     talentTier = 'District High Performer (Top 30%)';
-    repsToNextTier = Math.max(1, stats.p90 - reps);
+    scoreToNextTier = Math.max(1, Math.round(stats.p90 - score));
   } else if (clampedPercentile >= 45) {
     talentTier = 'Active Club Athlete (Top 50%)';
-    repsToNextTier = Math.max(1, stats.p75 - reps);
+    scoreToNextTier = Math.max(1, Math.round(stats.p75 - score));
   }
 
   const genderLabel = safeGender === 'male' ? 'Male' : 'Female';
-  const cohortComparisonText = `Outperforms ${rounded}% of ${genderLabel} athletes across India in the ${bracket.label} division`;
+  const cohortComparisonText = `Outperforms ${rounded}% of ${genderLabel} athletes across India in the ${bracket.label} division (${config.name})`;
 
   return {
+    testId: testType,
+    testName: config.name,
+    unit: config.unit,
+    score,
     percentile: clampedPercentile,
     percentileRounded: rounded,
     talentTier,
@@ -95,7 +175,7 @@ export function calculatePercentile(
     expectedMedian: stats.p50,
     eliteThreshold: stats.p90,
     nationalRecord: stats.nationalRecord,
-    repsToNextTier,
+    scoreToNextTier,
     cohortComparisonText,
   };
 }

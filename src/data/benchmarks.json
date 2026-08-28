@@ -1,137 +1,196 @@
 {
-  "testName": "Push-Ups (Full Body Reps to Fatigue)",
-  "unit": "reps",
-  "description": "Standard standard-form push-ups (chest touches within 4 inches of floor with elbow <90 deg, full extension >160 deg, neutral spine) scored against Indian Youth & Sports Academy benchmarks.",
-  "brackets": [
-    {
-      "bracketId": "10-13",
-      "label": "Sub-Junior (10-13 yrs)",
-      "minAge": 10,
-      "maxAge": 13,
-      "male": {
-        "p10": 4,
-        "p25": 8,
-        "p50": 14,
-        "p75": 22,
-        "p90": 30,
-        "p95": 36,
-        "p99": 45,
-        "nationalRecord": 58
-      },
-      "female": {
-        "p10": 2,
-        "p25": 5,
-        "p50": 10,
-        "p75": 16,
-        "p90": 23,
-        "p95": 28,
-        "p99": 36,
-        "nationalRecord": 48
-      }
+  "tests": {
+    "pushups_standard": {
+      "testId": "pushups_standard",
+      "testName": "Standard Push-Ups (Upper Body Endurance)",
+      "unit": "reps",
+      "description": "Standard push-ups requiring full 90° elbow flexion at the bottom and 155° lockout extension with neutral spine plank posture.",
+      "brackets": [
+        {
+          "bracketId": "10-13",
+          "label": "Sub-Junior (10-13 yrs)",
+          "minAge": 10,
+          "maxAge": 13,
+          "male": { "p10": 4, "p25": 8, "p50": 14, "p75": 22, "p90": 30, "p95": 36, "p99": 45, "nationalRecord": 58 },
+          "female": { "p10": 2, "p25": 5, "p50": 10, "p75": 16, "p90": 23, "p95": 28, "p99": 36, "nationalRecord": 48 }
+        },
+        {
+          "bracketId": "14-17",
+          "label": "Junior (14-17 yrs)",
+          "minAge": 14,
+          "maxAge": 17,
+          "male": { "p10": 10, "p25": 18, "p50": 28, "p75": 38, "p90": 48, "p95": 55, "p99": 68, "nationalRecord": 84 },
+          "female": { "p10": 5, "p25": 11, "p50": 19, "p75": 27, "p90": 36, "p95": 42, "p99": 52, "nationalRecord": 65 }
+        },
+        {
+          "bracketId": "18-22",
+          "label": "Youth / College (18-22 yrs)",
+          "minAge": 18,
+          "maxAge": 22,
+          "male": { "p10": 14, "p25": 24, "p50": 35, "p75": 46, "p90": 58, "p95": 66, "p99": 80, "nationalRecord": 102 },
+          "female": { "p10": 7, "p25": 14, "p50": 22, "p75": 32, "p90": 42, "p95": 48, "p99": 60, "nationalRecord": 75 }
+        },
+        {
+          "bracketId": "23-30",
+          "label": "Senior (23-30 yrs)",
+          "minAge": 23,
+          "maxAge": 30,
+          "male": { "p10": 12, "p25": 22, "p50": 33, "p75": 44, "p90": 55, "p95": 62, "p99": 76, "nationalRecord": 98 },
+          "female": { "p10": 6, "p25": 12, "p50": 20, "p75": 29, "p90": 39, "p95": 45, "p99": 56, "nationalRecord": 70 }
+        },
+        {
+          "bracketId": "30+",
+          "label": "Masters (30+ yrs)",
+          "minAge": 31,
+          "maxAge": 99,
+          "male": { "p10": 8, "p25": 16, "p50": 25, "p75": 35, "p90": 45, "p95": 52, "p99": 65, "nationalRecord": 82 },
+          "female": { "p10": 4, "p25": 9, "p50": 15, "p75": 23, "p90": 31, "p95": 37, "p99": 48, "nationalRecord": 60 }
+        }
+      ]
     },
-    {
-      "bracketId": "14-17",
-      "label": "Junior (14-17 yrs)",
-      "minAge": 14,
-      "maxAge": 17,
-      "male": {
-        "p10": 10,
-        "p25": 18,
-        "p50": 28,
-        "p75": 38,
-        "p90": 48,
-        "p95": 55,
-        "p99": 68,
-        "nationalRecord": 84
-      },
-      "female": {
-        "p10": 5,
-        "p25": 11,
-        "p50": 19,
-        "p75": 27,
-        "p90": 36,
-        "p95": 42,
-        "p99": 52,
-        "nationalRecord": 65
-      }
+    "squats_standard": {
+      "testId": "squats_standard",
+      "testName": "Deep Bodyweight Squats (Lower Body Endurance)",
+      "unit": "reps",
+      "description": "Full depth bodyweight squats reaching knee flexion <= 90° (thighs parallel or below) and rising to full 160° standing extension with upright torso.",
+      "brackets": [
+        {
+          "bracketId": "10-13",
+          "label": "Sub-Junior (10-13 yrs)",
+          "minAge": 10,
+          "maxAge": 13,
+          "male": { "p10": 12, "p25": 20, "p50": 30, "p75": 42, "p90": 55, "p95": 65, "p99": 80, "nationalRecord": 105 },
+          "female": { "p10": 10, "p25": 18, "p50": 28, "p75": 38, "p90": 50, "p95": 60, "p99": 75, "nationalRecord": 98 }
+        },
+        {
+          "bracketId": "14-17",
+          "label": "Junior (14-17 yrs)",
+          "minAge": 14,
+          "maxAge": 17,
+          "male": { "p10": 18, "p25": 28, "p50": 42, "p75": 58, "p90": 74, "p95": 85, "p99": 105, "nationalRecord": 135 },
+          "female": { "p10": 15, "p25": 24, "p50": 36, "p75": 50, "p90": 65, "p95": 76, "p99": 95, "nationalRecord": 120 }
+        },
+        {
+          "bracketId": "18-22",
+          "label": "Youth / College (18-22 yrs)",
+          "minAge": 18,
+          "maxAge": 22,
+          "male": { "p10": 22, "p25": 35, "p50": 50, "p75": 68, "p90": 86, "p95": 98, "p99": 120, "nationalRecord": 155 },
+          "female": { "p10": 18, "p25": 28, "p50": 42, "p75": 58, "p90": 74, "p95": 85, "p99": 105, "nationalRecord": 135 }
+        },
+        {
+          "bracketId": "23-30",
+          "label": "Senior (23-30 yrs)",
+          "minAge": 23,
+          "maxAge": 30,
+          "male": { "p10": 20, "p25": 32, "p50": 46, "p75": 64, "p90": 80, "p95": 92, "p99": 115, "nationalRecord": 145 },
+          "female": { "p10": 16, "p25": 26, "p50": 38, "p75": 54, "p90": 68, "p95": 78, "p99": 98, "nationalRecord": 125 }
+        },
+        {
+          "bracketId": "30+",
+          "label": "Masters (30+ yrs)",
+          "minAge": 31,
+          "maxAge": 99,
+          "male": { "p10": 15, "p25": 24, "p50": 36, "p75": 50, "p90": 65, "p95": 75, "p99": 95, "nationalRecord": 120 },
+          "female": { "p10": 12, "p25": 20, "p50": 30, "p75": 42, "p90": 55, "p95": 65, "p99": 82, "nationalRecord": 105 }
+        }
+      ]
     },
-    {
-      "bracketId": "18-22",
-      "label": "Youth / College (18-22 yrs)",
-      "minAge": 18,
-      "maxAge": 22,
-      "male": {
-        "p10": 15,
-        "p25": 25,
-        "p50": 36,
-        "p75": 48,
-        "p90": 60,
-        "p95": 70,
-        "p99": 85,
-        "nationalRecord": 105
-      },
-      "female": {
-        "p10": 8,
-        "p25": 15,
-        "p50": 24,
-        "p75": 34,
-        "p90": 44,
-        "p95": 50,
-        "p99": 62,
-        "nationalRecord": 78
-      }
+    "plank_hold": {
+      "testId": "plank_hold",
+      "testName": "Isometric Plank Hold (Core Stability)",
+      "unit": "seconds",
+      "description": "Continuous forearm plank hold maintaining a straight spinal alignment within 155°-185° without hip sagging or piking.",
+      "brackets": [
+        {
+          "bracketId": "10-13",
+          "label": "Sub-Junior (10-13 yrs)",
+          "minAge": 10,
+          "maxAge": 13,
+          "male": { "p10": 25, "p25": 45, "p50": 70, "p75": 105, "p90": 140, "p95": 165, "p99": 210, "nationalRecord": 300 },
+          "female": { "p10": 20, "p25": 40, "p50": 60, "p75": 90, "p90": 125, "p95": 150, "p99": 190, "nationalRecord": 270 }
+        },
+        {
+          "bracketId": "14-17",
+          "label": "Junior (14-17 yrs)",
+          "minAge": 14,
+          "maxAge": 17,
+          "male": { "p10": 40, "p25": 65, "p50": 100, "p75": 145, "p90": 190, "p95": 225, "p99": 280, "nationalRecord": 400 },
+          "female": { "p10": 30, "p25": 55, "p50": 85, "p75": 125, "p90": 165, "p95": 195, "p99": 245, "nationalRecord": 350 }
+        },
+        {
+          "bracketId": "18-22",
+          "label": "Youth / College (18-22 yrs)",
+          "minAge": 18,
+          "maxAge": 22,
+          "male": { "p10": 50, "p25": 80, "p50": 120, "p75": 175, "p90": 230, "p95": 270, "p99": 340, "nationalRecord": 480 },
+          "female": { "p10": 40, "p25": 65, "p50": 100, "p75": 145, "p90": 190, "p95": 225, "p99": 280, "nationalRecord": 400 }
+        },
+        {
+          "bracketId": "23-30",
+          "label": "Senior (23-30 yrs)",
+          "minAge": 23,
+          "maxAge": 30,
+          "male": { "p10": 45, "p25": 75, "p50": 115, "p75": 165, "p90": 215, "p95": 255, "p99": 320, "nationalRecord": 450 },
+          "female": { "p10": 35, "p25": 60, "p50": 95, "p75": 135, "p90": 180, "p95": 210, "p99": 265, "nationalRecord": 380 }
+        },
+        {
+          "bracketId": "30+",
+          "label": "Masters (30+ yrs)",
+          "minAge": 31,
+          "maxAge": 99,
+          "male": { "p10": 35, "p25": 60, "p50": 90, "p75": 130, "p90": 175, "p95": 205, "p99": 260, "nationalRecord": 360 },
+          "female": { "p10": 25, "p25": 45, "p50": 75, "p75": 110, "p90": 150, "p95": 175, "p99": 220, "nationalRecord": 310 }
+        }
+      ]
     },
-    {
-      "bracketId": "23-30",
-      "label": "Senior (23-30 yrs)",
-      "minAge": 23,
-      "maxAge": 30,
-      "male": {
-        "p10": 16,
-        "p25": 26,
-        "p50": 38,
-        "p75": 50,
-        "p90": 62,
-        "p95": 72,
-        "p99": 88,
-        "nationalRecord": 112
-      },
-      "female": {
-        "p10": 9,
-        "p25": 16,
-        "p50": 25,
-        "p75": 35,
-        "p90": 45,
-        "p95": 52,
-        "p99": 64,
-        "nationalRecord": 80
-      }
-    },
-    {
-      "bracketId": "30+",
-      "label": "Masters (31+ yrs)",
-      "minAge": 31,
-      "maxAge": 99,
-      "male": {
-        "p10": 12,
-        "p25": 20,
-        "p50": 30,
-        "p75": 40,
-        "p90": 52,
-        "p95": 60,
-        "p99": 75,
-        "nationalRecord": 95
-      },
-      "female": {
-        "p10": 6,
-        "p25": 12,
-        "p50": 20,
-        "p75": 28,
-        "p90": 36,
-        "p95": 44,
-        "p99": 54,
-        "nationalRecord": 70
-      }
+    "vertical_jump": {
+      "testId": "vertical_jump",
+      "testName": "Vertical Jump Height (Explosive Leg Power)",
+      "unit": "cm",
+      "description": "Countermovement vertical jump test measuring takeoff-to-landing airborne flight duration to calculate vertical displacement.",
+      "brackets": [
+        {
+          "bracketId": "10-13",
+          "label": "Sub-Junior (10-13 yrs)",
+          "minAge": 10,
+          "maxAge": 13,
+          "male": { "p10": 20, "p25": 26, "p50": 33, "p75": 40, "p90": 47, "p95": 52, "p99": 60, "nationalRecord": 70 },
+          "female": { "p10": 16, "p25": 22, "p50": 28, "p75": 34, "p90": 40, "p95": 44, "p99": 51, "nationalRecord": 60 }
+        },
+        {
+          "bracketId": "14-17",
+          "label": "Junior (14-17 yrs)",
+          "minAge": 14,
+          "maxAge": 17,
+          "male": { "p10": 28, "p25": 36, "p50": 45, "p75": 54, "p90": 63, "p95": 69, "p99": 78, "nationalRecord": 90 },
+          "female": { "p10": 22, "p25": 29, "p50": 37, "p75": 45, "p90": 53, "p95": 58, "p99": 66, "nationalRecord": 78 }
+        },
+        {
+          "bracketId": "18-22",
+          "label": "Youth / College (18-22 yrs)",
+          "minAge": 18,
+          "maxAge": 22,
+          "male": { "p10": 35, "p25": 44, "p50": 55, "p75": 65, "p90": 75, "p95": 82, "p99": 92, "nationalRecord": 108 },
+          "female": { "p10": 26, "p25": 34, "p50": 43, "p75": 52, "p90": 61, "p95": 67, "p99": 76, "nationalRecord": 89 }
+        },
+        {
+          "bracketId": "23-30",
+          "label": "Senior (23-30 yrs)",
+          "minAge": 23,
+          "maxAge": 30,
+          "male": { "p10": 34, "p25": 42, "p50": 52, "p75": 62, "p90": 72, "p95": 78, "p99": 88, "nationalRecord": 102 },
+          "female": { "p10": 24, "p25": 32, "p50": 40, "p75": 49, "p90": 57, "p95": 63, "p99": 72, "nationalRecord": 84 }
+        },
+        {
+          "bracketId": "30+",
+          "label": "Masters (30+ yrs)",
+          "minAge": 31,
+          "maxAge": 99,
+          "male": { "p10": 27, "p25": 35, "p50": 44, "p75": 53, "p90": 62, "p95": 68, "p99": 77, "nationalRecord": 90 },
+          "female": { "p10": 20, "p25": 27, "p50": 34, "p75": 42, "p90": 49, "p95": 54, "p99": 62, "nationalRecord": 74 }
+        }
+      ]
     }
-  ]
+  }
 }

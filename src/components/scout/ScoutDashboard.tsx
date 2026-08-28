@@ -12,7 +12,9 @@ import {
   Play, 
   Send,
   ArrowUpRight,
-  TrendingUp
+  TrendingUp,
+  Download,
+  Scale
 } from 'lucide-react';
 import { AssessmentResult, ScoutFilterState } from '../../types';
 import { 
@@ -24,6 +26,7 @@ import { FilterBar } from './FilterBar';
 import { AthleteTable } from './AthleteTable';
 import { AthleteDetailModal } from './AthleteDetailModal';
 import { ShortlistDrawer } from './ShortlistDrawer';
+import { AthleteComparisonModal } from './AthleteComparisonModal';
 import { Button } from '../common/Button';
 import { isFirebaseConfigured } from '../../services/firebase';
 
@@ -34,10 +37,15 @@ export const ScoutDashboard: React.FC = () => {
   const [isShortlistOpen, setIsShortlistOpen] = useState(false);
   const [newIds, setNewIds] = useState<Set<string>>(new Set());
   const [isSimulatingIncoming, setIsSimulatingIncoming] = useState(false);
+  
+  // Head-to-Head Comparison selection
+  const [selectedForComparison, setSelectedForComparison] = useState<Set<string>>(new Set());
+  const [isComparisonOpen, setIsComparisonOpen] = useState(false);
 
   // Filter & Search State
   const [filters, setFilters] = useState<ScoutFilterState>({
     searchQuery: '',
+    testType: '',
     sport: '',
     state: '',
     minAge: 10,
@@ -58,7 +66,6 @@ export const ScoutDashboard: React.FC = () => {
         const newlyAdded = updatedList.filter((a) => !currentIds.has(a.id)).map((a) => a.id);
         if (newlyAdded.length > 0) {
           setNewIds((prev) => new Set([...prev, ...newlyAdded]));
-          // Clear highlight after 5 seconds
           setTimeout(() => {
             setNewIds((prev) => {
               const copy = new Set(prev);
@@ -93,6 +100,11 @@ export const ScoutDashboard: React.FC = () => {
       );
     }
 
+    // Test Type
+    if (filters.testType) {
+      list = list.filter((a) => a.testType === filters.testType);
+    }
+
     // Sport
     if (filters.sport) {
       list = list.filter((a) => a.sport.toLowerCase() === filters.sport.toLowerCase());
@@ -115,232 +127,271 @@ export const ScoutDashboard: React.FC = () => {
 
     // Sorting
     list.sort((a, b) => {
-      switch (filters.sortBy) {
-        case 'percentile_desc':
-          return b.percentile - a.percentile;
-        case 'percentile_asc':
-          return a.percentile - b.percentile;
-        case 'reps_desc':
-          return b.repsCount - a.repsCount;
-        case 'date_desc':
-        default:
-          return new Date(b.verifiedAt).getTime() - new Date(a.verifiedAt).getTime();
-      }
+      if (filters.sortBy === 'percentile_desc') return b.percentile - a.percentile;
+      if (filters.sortBy === 'percentile_asc') return a.percentile - b.percentile;
+      if (filters.sortBy === 'score_desc') return b.score - a.score;
+      if (filters.sortBy === 'date_desc') return new Date(b.verifiedAt).getTime() - new Date(a.verifiedAt).getTime();
+      return 0;
     });
 
     return list;
   }, [assessments, filters]);
 
-  // Aggregate Metrics
-  const metrics = useMemo(() => {
-    const total = assessments.length;
-    const eliteCount = assessments.filter((a) => a.percentile >= 90).length;
-    
-    // Most active state
-    const stateCounts: Record<string, number> = {};
-    assessments.forEach((a) => {
-      stateCounts[a.state] = (stateCounts[a.state] || 0) + 1;
-    });
-    const topState = Object.entries(stateCounts).sort((a, b) => b[1] - a[1])[0]?.[0] || 'Haryana';
-
-    // Most active sport
-    const sportCounts: Record<string, number> = {};
-    assessments.forEach((a) => {
-      sportCounts[a.sport] = (sportCounts[a.sport] || 0) + 1;
-    });
-    const topSport = Object.entries(sportCounts).sort((a, b) => b[1] - a[1])[0]?.[0] || 'Wrestling';
-
-    const shortlisted = assessments.filter((a) => (a.shortlistedBy || []).includes('scout_default'));
-
-    return {
-      total,
-      eliteCount,
-      topState,
-      topSport,
-      shortlistedCount: shortlisted.length,
-      shortlistedList: shortlisted,
-    };
+  const shortlistedAssessments = useMemo(() => {
+    return assessments.filter((a) => (a.shortlistedBy || []).includes('scout_default'));
   }, [assessments]);
 
-  // Handlers
-  const handleSelectAthlete = (assessment: AssessmentResult) => {
-    setSelectedAssessment(assessment);
-    setIsDetailOpen(true);
+  // Handle shortlist toggle
+  const handleToggleShortlist = async (id: string) => {
+    await toggleScoutShortlist(id, 'scout_default');
   };
 
-  const handleToggleShortlist = async (assessmentId: string) => {
-    await toggleScoutShortlist(assessmentId);
+  // Handle comparison toggle
+  const handleToggleCompare = (id: string) => {
+    setSelectedForComparison((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else {
+        if (next.size >= 3) {
+          alert('You can compare up to 3 athletes simultaneously.');
+          return prev;
+        }
+        next.add(id);
+      }
+      return next;
+    });
   };
 
-  // One-click live simulator to demonstrate live sync to judges
-  const handleSimulateLivePush = async () => {
-    setIsSimulatingIncoming(true);
+  const comparedAthletes = useMemo(() => {
+    return assessments.filter((a) => selectedForComparison.has(a.id));
+  }, [assessments, selectedForComparison]);
 
-    const demoAthletes = [
-      { name: 'Simranjeet Kaur', age: 16, gender: 'female' as const, sport: 'Athletics (Sprint/Jump)' as const, state: 'Punjab', district: 'Ludhiana', reps: 46, p: 97.4 },
-      { name: 'Manish Rawat', age: 18, gender: 'male' as const, sport: 'Boxing' as const, state: 'Uttarakhand', district: 'Almora', reps: 58, p: 93.1 },
-      { name: 'Praveen Goud', age: 17, gender: 'male' as const, sport: 'Kabaddi' as const, state: 'Telangana', district: 'Warangal', reps: 56, p: 94.6 },
+  // Export filtered assessments to CSV
+  const exportAllCSV = () => {
+    const headers = [
+      'Name',
+      'Age',
+      'Gender',
+      'Sport',
+      'State',
+      'District',
+      'Test Type',
+      'Score',
+      'Percentile',
+      'Talent Tier',
+      'Form Quality %',
+      'Verification Hash',
+      'Verified At',
     ];
 
-    const pick = demoAthletes[Math.floor(Math.random() * demoAthletes.length)];
-    const mockHash = `TL-${Math.round(pick.p)}-${pick.state.slice(0, 3).toUpperCase()}-${Math.random().toString(36).substring(2, 6).toUpperCase()}`;
+    const rows = filteredAssessments.map((a) => [
+      `"${a.athleteName}"`,
+      a.age,
+      a.gender,
+      `"${a.sport}"`,
+      `"${a.state}"`,
+      `"${a.district}"`,
+      `"${a.testType}"`,
+      a.score,
+      a.percentile,
+      `"${a.talentTier}"`,
+      a.biomechanics.formScore,
+      `"${a.verificationHash}"`,
+      `"${a.verifiedAt}"`,
+    ]);
 
-    const newAssessment: AssessmentResult = {
+    const csvContent = [headers.join(','), ...rows.map((r) => r.join(','))].join('\n');
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.setAttribute('href', url);
+    link.setAttribute('download', `TalentLens_Scout_Database_${Date.now()}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
+  // Simulate incoming live assessment for hackathon judging demo
+  const handleSimulateIncoming = async () => {
+    setIsSimulatingIncoming(true);
+    const names = ['Neeraj Yadav', 'Simranjeet Kaur', 'Devendra Murmu', 'Ananya Deshmukh', 'Sahil Rathore'];
+    const sports = ['Athletics (Sprint/Jump)', 'Wrestling', 'Kabaddi', 'Football', 'Boxing'] as const;
+    const states = ['Haryana', 'Punjab', 'Jharkhand', 'Maharashtra', 'Rajasthan'];
+    const tests = ['pushups_standard', 'squats_standard', 'plank_hold', 'vertical_jump'] as const;
+
+    const randIdx = Math.floor(Math.random() * names.length);
+    const randTest = tests[Math.floor(Math.random() * tests.length)];
+    const chosenName = names[randIdx];
+    const chosenSport = sports[randIdx];
+    const chosenState = states[randIdx];
+
+    let testScore = 42;
+    if (randTest === 'squats_standard') testScore = 58;
+    else if (randTest === 'plank_hold') testScore = 145;
+    else if (randTest === 'vertical_jump') testScore = 64;
+
+    const mockResult: AssessmentResult = {
       id: `ass_live_${Date.now()}`,
       athleteId: `ath_live_${Date.now()}`,
-      athleteName: pick.name,
-      age: pick.age,
-      gender: pick.gender,
-      state: pick.state,
-      district: pick.district,
-      sport: pick.sport,
-      testType: 'pushups_standard',
-      repsCount: pick.reps,
-      durationSeconds: 56,
-      percentile: pick.p,
+      athleteName: chosenName,
+      age: 16 + Math.floor(Math.random() * 4),
+      gender: Math.random() > 0.4 ? 'male' : 'female',
+      state: chosenState,
+      district: 'Excellence Hub',
+      sport: chosenSport,
+      testType: randTest,
+      score: testScore,
+      durationSeconds: 60,
+      percentile: 94 + Math.floor(Math.random() * 5),
       talentTier: 'National Elite Prospect (Top 5%)',
       biomechanics: {
-        averageElbowFlexion: 77,
+        averageElbowFlexion: 78,
         averageTrunkAlignment: 174,
-        formScore: 95,
+        formScore: 98,
         incompletedReps: 0,
-        cadenceRepsPerMin: 52,
-        peakSpeedSec: 0.94,
+        cadenceRepsPerMin: 38,
+        peakSpeedSec: 1.1,
       },
-      verificationHash: mockHash,
+      verificationHash: `TL-98-${chosenState.slice(0, 3).toUpperCase()}-${Math.random().toString(36).substring(2, 6).toUpperCase()}`,
       verifiedAt: new Date().toISOString(),
       status: 'verified',
-      scoutNotes: ['Live assessment submitted via remote camera feed'],
+      scoutNotes: [],
       shortlistedBy: [],
     };
 
-    await saveAssessment(newAssessment);
+    await saveAssessment(mockResult);
     setIsSimulatingIncoming(false);
   };
 
+  // Metrics summary
+  const eliteCount = useMemo(() => assessments.filter((a) => a.percentile >= 90).length, [assessments]);
+  const avgPercentile = useMemo(() => {
+    if (assessments.length === 0) return 0;
+    return Math.round(assessments.reduce((acc, a) => acc + a.percentile, 0) / assessments.length);
+  }, [assessments]);
+
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8 animate-fade-in">
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8 animate-fade-in pb-16">
       
       {/* Header Banner */}
-      <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6 pb-6 border-b border-card-border">
+      <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4 pb-6 border-b border-card-border">
         <div>
-          <div className="flex items-center gap-2.5 mb-1.5">
-            <span className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 text-xs font-mono font-bold tracking-wider uppercase animate-pulse">
-              <span className="w-2 h-2 rounded-full bg-emerald-400" />
-              Live Scout Stream ({isFirebaseConfigured ? 'Firestore' : 'Reactive Bus'})
+          <div className="flex items-center gap-2 mb-1.5">
+            <span className="px-2.5 py-0.5 rounded-full bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 text-[10px] font-mono font-bold uppercase tracking-wider flex items-center gap-1.5">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+              Live Scouting Discovery Network
             </span>
-            <span className="text-xs text-slate-500">• Auto-updating in real-time</span>
+            <span className="text-xs font-mono text-slate-500">
+              {isFirebaseConfigured ? 'Firestore Synchronized' : 'Multi-Tab Event Mesh'}
+            </span>
           </div>
 
           <h1 className="text-3xl sm:text-4xl font-display font-extrabold text-white tracking-wide uppercase">
-            Sports Talent Discovery Protocol
+            Scout & Coach Command Center
           </h1>
-          <p className="text-sm text-slate-400 max-w-2xl mt-1">
-            Real-time feed of AI-verified grassroots physical fitness assessments across Indian states, ranked against national percentile cohorts.
+          <p className="text-xs sm:text-sm text-slate-400 max-w-2xl mt-1">
+            Real-time feed of verified grassroots athletes across India. Filter by sport, state, and test type to discover undiscovered Olympic talent.
           </p>
         </div>
 
         {/* Action Buttons */}
-        <div className="flex items-center gap-3 w-full lg:w-auto">
+        <div className="flex items-center gap-2.5 flex-wrap">
+          {selectedForComparison.size >= 2 && (
+            <Button
+              onClick={() => setIsComparisonOpen(true)}
+              variant="outline"
+              size="sm"
+              className="border-cyber text-cyber hover:bg-cyber/10 shadow-glow-cyber"
+              leftIcon={<Scale className="w-4 h-4" />}
+            >
+              Compare ({selectedForComparison.size})
+            </Button>
+          )}
+
           <Button
-            onClick={handleSimulateLivePush}
-            isLoading={isSimulatingIncoming}
+            onClick={exportAllCSV}
             variant="secondary"
-            size="md"
-            leftIcon={<Zap className="w-4 h-4 text-slate-950" />}
+            size="sm"
+            leftIcon={<Download className="w-4 h-4" />}
           >
-            Simulate Incoming Live Assessment
+            Export CSV
           </Button>
 
           <Button
-            onClick={() => setIsShortlistOpen(true)}
+            onClick={handleSimulateIncoming}
             variant="outline"
-            size="md"
-            leftIcon={<Bookmark className="w-4 h-4 text-amber-400 fill-amber-400" />}
+            size="sm"
+            disabled={isSimulatingIncoming}
+            leftIcon={<Sparkles className="w-4 h-4 text-brand" />}
           >
-            Saved ({metrics.shortlistedCount})
+            {isSimulatingIncoming ? 'Simulating...' : 'Simulate Live Submission'}
           </Button>
+
+          <button
+            onClick={() => setIsShortlistOpen(true)}
+            className="px-4 py-2 rounded-xl bg-card border border-card-border hover:border-amber-500/50 text-xs font-bold uppercase tracking-wider text-amber-400 flex items-center gap-2 shadow-lg transition-all"
+          >
+            <Bookmark className="w-4 h-4 fill-amber-400" />
+            <span>Shortlist ({shortlistedAssessments.length})</span>
+          </button>
         </div>
       </div>
 
-      {/* Metric Cards KPI Row */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        
-        {/* Total Athletes */}
-        <div className="p-5 rounded-3xl bg-card border border-card-border shadow-lg flex items-center justify-between">
-          <div>
-            <span className="text-[11px] font-mono uppercase tracking-widest text-slate-400 block">
-              Verified Athletes
-            </span>
-            <div className="flex items-baseline gap-1 mt-1">
-              <span className="text-3xl sm:text-4xl font-display font-extrabold text-white">
-                {metrics.total}
-              </span>
-              <span className="text-xs text-emerald-400 font-mono font-bold">+100% Verified</span>
-            </div>
+      {/* KPI Stats Grid */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+        <div className="p-5 rounded-3xl bg-card border border-card-border space-y-1">
+          <div className="flex items-center justify-between text-slate-400">
+            <span className="text-xs font-mono uppercase tracking-wider">Total Athletes</span>
+            <Users className="w-4 h-4 text-slate-500" />
           </div>
-          <div className="w-11 h-11 rounded-2xl bg-brand/10 border border-brand/30 flex items-center justify-center text-brand">
-            <Users className="w-5 h-5" />
+          <div className="text-3xl font-display font-extrabold text-white">
+            {assessments.length}
           </div>
+          <span className="text-[11px] text-slate-400 font-mono block">Verified in Protocol</span>
         </div>
 
-        {/* Elite Prospects */}
-        <div className="p-5 rounded-3xl bg-card border border-card-border shadow-lg flex items-center justify-between">
-          <div>
-            <span className="text-[11px] font-mono uppercase tracking-widest text-slate-400 block">
-              Elite Prospects (90%+)
-            </span>
-            <div className="flex items-baseline gap-1 mt-1">
-              <span className="text-3xl sm:text-4xl font-display font-extrabold text-amber-400">
-                {metrics.eliteCount}
-              </span>
-              <span className="text-xs text-slate-400 font-mono">National Cohort</span>
-            </div>
+        <div className="p-5 rounded-3xl bg-card border border-card-border space-y-1">
+          <div className="flex items-center justify-between text-slate-400">
+            <span className="text-xs font-mono uppercase tracking-wider">National Elite (Top 10%)</span>
+            <Award className="w-4 h-4 text-amber-400" />
           </div>
-          <div className="w-11 h-11 rounded-2xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-center text-amber-400">
-            <Award className="w-5 h-5" />
+          <div className="text-3xl font-display font-extrabold text-amber-400">
+            {eliteCount}
           </div>
+          <span className="text-[11px] text-slate-400 font-mono block">High-Potential Prospects</span>
         </div>
 
-        {/* Top State */}
-        <div className="p-5 rounded-3xl bg-card border border-card-border shadow-lg flex items-center justify-between">
-          <div>
-            <span className="text-[11px] font-mono uppercase tracking-widest text-slate-400 block">
-              Leading Region
-            </span>
-            <div className="text-xl sm:text-2xl font-bold text-white mt-1 truncate max-w-[140px]">
-              {metrics.topState}
-            </div>
+        <div className="p-5 rounded-3xl bg-card border border-card-border space-y-1">
+          <div className="flex items-center justify-between text-slate-400">
+            <span className="text-xs font-mono uppercase tracking-wider">Average Percentile</span>
+            <TrendingUp className="w-4 h-4 text-brand" />
           </div>
-          <div className="w-11 h-11 rounded-2xl bg-cyber/10 border border-cyber/30 flex items-center justify-center text-cyber">
-            <MapPin className="w-5 h-5" />
+          <div className="text-3xl font-display font-extrabold text-brand">
+            {avgPercentile}%
           </div>
+          <span className="text-[11px] text-slate-400 font-mono block">National Norm Calibration</span>
         </div>
 
-        {/* Top Sport */}
-        <div className="p-5 rounded-3xl bg-card border border-card-border shadow-lg flex items-center justify-between">
-          <div>
-            <span className="text-[11px] font-mono uppercase tracking-widest text-slate-400 block">
-              Top Discipline
-            </span>
-            <div className="text-base sm:text-lg font-bold text-white mt-1 truncate max-w-[140px]">
-              {metrics.topSport}
-            </div>
+        <div className="p-5 rounded-3xl bg-card border border-card-border space-y-1">
+          <div className="flex items-center justify-between text-slate-400">
+            <span className="text-xs font-mono uppercase tracking-wider">Shortlisted Candidates</span>
+            <Bookmark className="w-4 h-4 text-amber-400" />
           </div>
-          <div className="w-11 h-11 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center text-emerald-400">
-            <Activity className="w-5 h-5" />
+          <div className="text-3xl font-display font-extrabold text-white">
+            {shortlistedAssessments.length}
           </div>
+          <span className="text-[11px] text-slate-400 font-mono block">Saved for State Trials</span>
         </div>
-
       </div>
 
-      {/* Filter Toolbar */}
+      {/* Filter and Search Bar */}
       <FilterBar
         filters={filters}
         onChange={setFilters}
         onReset={() =>
           setFilters({
             searchQuery: '',
+            testType: '',
             sport: '',
             state: '',
             minAge: 10,
@@ -352,32 +403,58 @@ export const ScoutDashboard: React.FC = () => {
           })
         }
         totalResults={filteredAssessments.length}
-        shortlistedCount={metrics.shortlistedCount}
+        shortlistedCount={shortlistedAssessments.length}
       />
 
-      {/* Real-time Assessments Table */}
+      {/* Athlete Discovery Table */}
       <AthleteTable
         assessments={filteredAssessments}
-        onSelectAthlete={handleSelectAthlete}
+        onSelectAthlete={(item) => {
+          setSelectedAssessment(item);
+          setIsDetailOpen(true);
+        }}
         onToggleShortlist={handleToggleShortlist}
         newAssessmentIds={newIds}
+        selectedForComparison={selectedForComparison}
+        onToggleCompare={handleToggleCompare}
       />
 
-      {/* Athlete Detail Modal */}
-      <AthleteDetailModal
-        assessment={selectedAssessment}
-        isOpen={isDetailOpen}
-        onClose={() => setIsDetailOpen(false)}
-      />
+      {/* Athlete Detail Inspection Modal */}
+      {selectedAssessment && (
+        <AthleteDetailModal
+          isOpen={isDetailOpen}
+          onClose={() => {
+            setIsDetailOpen(false);
+            setSelectedAssessment(null);
+          }}
+          assessment={selectedAssessment}
+          onShortlistChange={() => {}}
+        />
+      )}
 
       {/* Shortlist Drawer */}
       <ShortlistDrawer
         isOpen={isShortlistOpen}
         onClose={() => setIsShortlistOpen(false)}
-        shortlistedAssessments={metrics.shortlistedList}
-        onSelectAthlete={handleSelectAthlete}
+        shortlistedAssessments={shortlistedAssessments}
+        onSelectAthlete={(item) => {
+          setSelectedAssessment(item);
+          setIsDetailOpen(true);
+        }}
         onRemoveFromShortlist={handleToggleShortlist}
       />
+
+      {/* Head-to-Head Athlete Comparison Matrix */}
+      {isComparisonOpen && (
+        <AthleteComparisonModal
+          athletes={comparedAthletes}
+          onClose={() => setIsComparisonOpen(false)}
+          onClear={() => {
+            setSelectedForComparison(new Set());
+            setIsComparisonOpen(false);
+          }}
+        />
+      )}
 
     </div>
   );

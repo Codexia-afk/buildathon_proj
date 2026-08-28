@@ -13,6 +13,12 @@ export type SportType =
   | 'Weightlifting'
   | 'Multi-Sport / General';
 
+export type TestType = 
+  | 'pushups_standard'
+  | 'squats_standard'
+  | 'plank_hold'
+  | 'vertical_jump';
+
 export type TalentTier = 
   | 'National Elite Prospect (Top 5%)'
   | 'State Level Contender (Top 15%)'
@@ -38,14 +44,27 @@ export interface AthleteProfile {
   createdAt: string;
 }
 
-export interface PushUpBiomechanics {
-  averageElbowFlexion: number; // e.g. 78 degrees at bottom
-  averageTrunkAlignment: number; // e.g. 172 degrees (back straightness)
+export interface ExerciseBiomechanics {
+  // Push-up / Squat metrics
+  averageElbowFlexion?: number; // degrees
+  averageKneeFlexion?: number;  // degrees (for squats)
+  averageTrunkAlignment: number; // degrees (back straightness)
   formScore: number; // 0-100%
   incompletedReps: number;
-  cadenceRepsPerMin: number;
-  peakSpeedSec: number;
+  cadenceRepsPerMin?: number;
+  peakSpeedSec?: number;
+  
+  // Plank Hold metrics
+  holdDurationSeconds?: number;
+  stabilityScore?: number; // 0-100%
+
+  // Vertical Jump metrics
+  jumpHeightCm?: number;
+  flightTimeSec?: number;
+  takeoffVelocityMs?: number;
 }
+
+export type PushUpBiomechanics = ExerciseBiomechanics;
 
 export interface AssessmentResult {
   id: string;
@@ -56,12 +75,13 @@ export interface AssessmentResult {
   state: string;
   district: string;
   sport: SportType;
-  testType: 'pushups_standard';
-  repsCount: number;
+  testType: TestType;
+  score: number; // reps count or seconds or cm jump height
+  repsCount?: number;
   durationSeconds: number;
   percentile: number; // 0-100
   talentTier: TalentTier;
-  biomechanics: PushUpBiomechanics;
+  biomechanics: ExerciseBiomechanics;
   verificationHash: string;
   verifiedAt: string;
   videoPreviewUrl?: string;
@@ -70,19 +90,8 @@ export interface AssessmentResult {
   shortlistedBy?: string[]; // array of scout IDs
 }
 
-export interface PercentileBracket {
-  ageRange: [number, number]; // e.g. [14, 17]
-  gender: Gender;
-  p10: number;
-  p25: number;
-  p50: number; // median
-  p75: number;
-  p90: number;
-  p95: number;
-  p99: number;
-}
-
 export interface BenchmarkDistribution {
+  testId: TestType;
   testName: string;
   unit: string;
   description: string;
@@ -114,14 +123,32 @@ export interface BenchmarkDistribution {
   }[];
 }
 
+export interface MultiTestBenchmarks {
+  tests: Record<TestType, BenchmarkDistribution>;
+}
+
 export interface ScoutFilterState {
   searchQuery: string;
+  testType: string;
   sport: string;
   state: string;
   minAge: number;
   maxAge: number;
   minPercentile: number;
   tier: string;
-  sortBy: 'percentile_desc' | 'percentile_asc' | 'reps_desc' | 'date_desc';
+  sortBy: 'percentile_desc' | 'percentile_asc' | 'score_desc' | 'date_desc';
   onlyShortlisted: boolean;
+}
+
+export interface ExerciseConfig {
+  id: TestType;
+  name: string;
+  shortName: string;
+  category: 'Upper Body' | 'Lower Body' | 'Core' | 'Power';
+  iconName: string;
+  metricLabel: string;
+  unit: string;
+  description: string;
+  standardDurationSec?: number;
+  instructions: string[];
 }

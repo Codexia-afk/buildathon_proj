@@ -1,6 +1,7 @@
 import React from 'react';
 import { X, Bookmark, Download, ExternalLink, Trash2, ArrowRight } from 'lucide-react';
 import { AssessmentResult } from '../../types';
+import { EXERCISE_CONFIGS, getTierBadgeColor } from '../../services/percentileEngine';
 import { Button } from '../common/Button';
 
 interface ShortlistDrawerProps {
@@ -30,9 +31,11 @@ export const ShortlistDrawer: React.FC<ShortlistDrawerProps> = ({
       'Sport',
       'State',
       'District',
-      'PushUp Reps',
+      'Test Type',
+      'Score',
       'Duration (sec)',
       'National Percentile',
+      'Talent Tier',
       'Form Score (%)',
       'Verification Hash',
       'Date',
@@ -45,11 +48,13 @@ export const ShortlistDrawer: React.FC<ShortlistDrawerProps> = ({
       `"${a.sport}"`,
       `"${a.state}"`,
       `"${a.district}"`,
-      a.repsCount,
+      `"${a.testType}"`,
+      a.score,
       a.durationSeconds,
       a.percentile,
+      `"${a.talentTier}"`,
       a.biomechanics.formScore,
-      a.verificationHash,
+      `"${a.verificationHash}"`,
       `"${a.verifiedAt}"`,
     ]);
 
@@ -64,7 +69,7 @@ export const ShortlistDrawer: React.FC<ShortlistDrawerProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 overflow-hidden">
+    <div className="fixed inset-0 z-50 overflow-hidden animate-fade-in">
       {/* Backdrop */}
       <div 
         className="fixed inset-0 bg-slate-950/70 backdrop-blur-sm transition-opacity"
@@ -98,66 +103,90 @@ export const ShortlistDrawer: React.FC<ShortlistDrawerProps> = ({
           <div className="flex-1 p-6 overflow-y-auto space-y-3">
             {shortlistedAssessments.length === 0 ? (
               <div className="text-center py-12 text-slate-500 text-xs">
-                No athletes in your shortlist yet. Click the bookmark icon next to any athlete to add them.
+                No athletes added to shortlist yet. Click the bookmark icon next to an athlete in the discovery feed.
               </div>
             ) : (
-              shortlistedAssessments.map((a) => (
-                <div
-                  key={a.id}
-                  className="p-4 rounded-2xl bg-slate-900/80 border border-card-border hover:border-brand/40 transition-all flex items-start justify-between gap-3 group"
-                >
-                  <div 
-                    onClick={() => {
-                      onSelectAthlete(a);
-                      onClose();
-                    }}
-                    className="cursor-pointer flex-1"
+              shortlistedAssessments.map((athlete) => {
+                const config = EXERCISE_CONFIGS[athlete.testType] || EXERCISE_CONFIGS.pushups_standard;
+                const tierStyle = getTierBadgeColor(athlete.talentTier);
+
+                return (
+                  <div
+                    key={athlete.id}
+                    className="p-4 rounded-2xl bg-slate-900/80 border border-card-border hover:border-slate-600 transition-all space-y-3"
                   >
-                    <div className="flex items-center gap-2">
-                      <span className="font-bold text-white text-sm group-hover:text-brand-300 transition-colors">
-                        {a.athleteName}
-                      </span>
-                      <span className="font-mono text-xs font-bold text-brand bg-brand/10 px-2 py-0.5 rounded-full border border-brand/30">
-                        {Math.round(a.percentile)}%ile
-                      </span>
+                    <div className="flex items-start justify-between">
+                      <div>
+                        <h4 className="font-bold text-white text-sm">{athlete.athleteName}</h4>
+                        <p className="text-xs text-slate-400 font-mono">
+                          {athlete.sport} · {athlete.state} ({athlete.age}y)
+                        </p>
+                      </div>
+
+                      <button
+                        onClick={() => onRemoveFromShortlist(athlete.id)}
+                        className="text-slate-500 hover:text-red-400 p-1"
+                        title="Remove from shortlist"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
                     </div>
 
-                    <p className="text-xs text-slate-400 mt-1">
-                      {a.sport} • {a.state} ({a.district})
-                    </p>
+                    <div className="flex items-center justify-between text-xs pt-2 border-t border-card-border/50">
+                      <div>
+                        <span className="text-[10px] text-slate-500 uppercase block font-mono">
+                          {config.shortName}
+                        </span>
+                        <span className="font-bold text-white font-mono">
+                          {athlete.score} {config.unit}
+                        </span>
+                      </div>
 
-                    <div className="flex items-center gap-3 mt-2 text-[11px] text-slate-400 font-mono">
-                      <span><strong>{a.repsCount}</strong> reps</span>
-                      <span>•</span>
-                      <span className="text-emerald-400">{a.biomechanics.formScore}% form</span>
+                      <div className="text-right">
+                        <span className="text-[10px] text-slate-500 uppercase block font-mono">
+                          Percentile
+                        </span>
+                        <span className="font-bold text-brand font-mono text-sm">
+                          {Math.round(athlete.percentile)}%
+                        </span>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center justify-between pt-1">
+                      <span className={`px-2 py-0.5 rounded-full text-[9px] font-bold border ${tierStyle.bg} ${tierStyle.text} ${tierStyle.border}`}>
+                        {athlete.talentTier.split(' (')[0]}
+                      </span>
+
+                      <button
+                        onClick={() => {
+                          onSelectAthlete(athlete);
+                          onClose();
+                        }}
+                        className="text-xs font-semibold text-brand hover:text-brand-400 flex items-center gap-1"
+                      >
+                        <span>Inspect Profile</span>
+                        <ArrowRight className="w-3 h-3" />
+                      </button>
                     </div>
                   </div>
-
-                  <button
-                    onClick={() => onRemoveFromShortlist(a.id)}
-                    title="Remove from shortlist"
-                    className="p-1.5 rounded-lg text-slate-500 hover:text-red-400 hover:bg-red-500/10 transition-colors"
-                  >
-                    <Trash2 className="w-4 h-4" />
-                  </button>
-                </div>
-              ))
+                );
+              })
             )}
           </div>
 
-          {/* Footer */}
-          <div className="p-6 border-t border-card-border bg-slate-900/40 space-y-3">
-            <Button
-              onClick={handleExportCSV}
-              disabled={shortlistedAssessments.length === 0}
-              variant="primary"
-              size="md"
-              className="w-full"
-              leftIcon={<Download className="w-4 h-4" />}
-            >
-              Export Shortlist to CSV
-            </Button>
-          </div>
+          {/* Footer Action */}
+          {shortlistedAssessments.length > 0 && (
+            <div className="p-6 border-t border-card-border bg-slate-900/60">
+              <Button
+                onClick={handleExportCSV}
+                variant="primary"
+                className="w-full"
+                leftIcon={<Download className="w-4 h-4" />}
+              >
+                Export Shortlist to CSV
+              </Button>
+            </div>
+          )}
 
         </div>
       </div>

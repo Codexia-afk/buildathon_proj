@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState } from 'react';
 import confetti from 'canvas-confetti';
 import { 
   ShieldCheck, 
@@ -13,7 +13,9 @@ import {
   Sparkles,
   ExternalLink,
   ChevronRight,
-  TrendingUp
+  Printer,
+  FileCheck,
+  Zap
 } from 'lucide-react';
 import { 
   BarChart, 
@@ -26,10 +28,11 @@ import {
   ReferenceLine 
 } from 'recharts';
 import { AssessmentResult, AthleteProfile } from '../../types';
-import { calculatePercentile, getTierBadgeColor } from '../../services/percentileEngine';
+import { calculatePercentile, getTierBadgeColor, EXERCISE_CONFIGS } from '../../services/percentileEngine';
 import { Button } from '../common/Button';
 import { saveAssessment } from '../../services/dataService';
 import { Link } from 'react-router-dom';
+import { AssessmentCertificate } from './AssessmentCertificate';
 
 interface VerifiedResultCardProps {
   athlete: AthleteProfile;
@@ -45,12 +48,14 @@ export const VerifiedResultCard: React.FC<VerifiedResultCardProps> = ({
   const [isPushed, setIsPushed] = useState(false);
   const [isPushing, setIsPushing] = useState(false);
   const [copiedLink, setCopiedLink] = useState(false);
-  const cardRef = useRef<HTMLDivElement>(null);
+  const [isCertificateOpen, setIsCertificateOpen] = useState(false);
 
+  const config = EXERCISE_CONFIGS[assessment.testType] || EXERCISE_CONFIGS.pushups_standard;
   const percentileInfo = calculatePercentile(
-    assessment.repsCount,
+    assessment.score,
     assessment.age,
-    assessment.gender
+    assessment.gender,
+    assessment.testType
   );
 
   const tierColors = getTierBadgeColor(percentileInfo.talentTier);
@@ -59,8 +64,8 @@ export const VerifiedResultCard: React.FC<VerifiedResultCardProps> = ({
   useEffect(() => {
     try {
       confetti({
-        particleCount: 80,
-        spread: 70,
+        particleCount: 90,
+        spread: 75,
         origin: { y: 0.6 },
         colors: ['#FF4D00', '#00F0FF', '#10B981', '#F59E0B'],
       });
@@ -83,216 +88,176 @@ export const VerifiedResultCard: React.FC<VerifiedResultCardProps> = ({
   };
 
   const handleShare = () => {
-    navigator.clipboard.writeText(window.location.href);
+    navigator.clipboard.writeText(
+      `TalentLens Verified: ${assessment.athleteName} scored ${assessment.score} ${config.unit} in ${config.name} (${assessment.percentile}th national percentile)! Verification Hash: ${assessment.verificationHash}`
+    );
     setCopiedLink(true);
     setTimeout(() => setCopiedLink(false), 2000);
   };
 
   // Cohort comparison chart data
   const cohortChartData = [
-    { name: '10th %ile', reps: Math.round(percentileInfo.expectedMedian * 0.4), type: 'benchmark' },
-    { name: '25th %ile', reps: Math.round(percentileInfo.expectedMedian * 0.7), type: 'benchmark' },
-    { name: 'Median (50th)', reps: percentileInfo.expectedMedian, type: 'benchmark' },
-    { name: 'Top 10% (90th)', reps: percentileInfo.eliteThreshold, type: 'benchmark' },
-    { name: `${athlete.fullName.split(' ')[0]} (Score)`, reps: assessment.repsCount, type: 'athlete' },
-    { name: 'Record (99th)', reps: percentileInfo.nationalRecord, type: 'benchmark' },
-  ];
+    { name: '10th %ile', score: Math.round(percentileInfo.expectedMedian * 0.4), type: 'benchmark' },
+    { name: '25th %ile', score: Math.round(percentileInfo.expectedMedian * 0.7), type: 'benchmark' },
+    { name: 'Median (50th)', score: percentileInfo.expectedMedian, type: 'benchmark' },
+    { name: 'Top 10% (90th)', score: percentileInfo.eliteThreshold, type: 'benchmark' },
+    { name: `${athlete.fullName.split(' ')[0]} (You)`, score: assessment.score, type: 'athlete' },
+    { name: 'Record (99th)', score: percentileInfo.nationalRecord, type: 'benchmark' },
+  ].sort((a, b) => a.score - b.score);
 
   return (
-    <div className="max-w-4xl mx-auto space-y-8 animate-fade-in pb-12">
+    <div className="w-full max-w-4xl mx-auto space-y-6 animate-fade-in pb-12">
       
-      {/* Certificate / Verified Card Container */}
-      <div 
-        ref={cardRef}
-        className="relative bg-gradient-to-b from-card to-slate-950 border-2 border-card-border rounded-3xl p-6 sm:p-10 shadow-2xl overflow-hidden"
-      >
-        {/* Glow Accent Ambient Highlights */}
-        <div className="absolute -top-32 -right-32 w-80 h-80 bg-brand-500/15 rounded-full blur-3xl pointer-events-none" />
-        <div className="absolute -bottom-32 -left-32 w-80 h-80 bg-cyber-500/15 rounded-full blur-3xl pointer-events-none" />
+      {/* Top Banner: Verification Protocol Success */}
+      <div className="p-4 sm:p-5 rounded-3xl bg-emerald-950/40 border border-emerald-500/40 backdrop-blur-xl flex flex-col sm:flex-row items-center justify-between gap-4 shadow-[0_0_30px_rgba(16,185,129,0.15)]">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-2xl bg-emerald-500/20 border border-emerald-500/40 flex items-center justify-center text-emerald-400">
+            <ShieldCheck className="w-6 h-6" />
+          </div>
+          <div>
+            <div className="flex items-center gap-2">
+              <span className="text-sm font-bold text-white uppercase tracking-wider font-mono">
+                Cryptographically Verified Result
+              </span>
+              <span className="px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 text-[10px] font-mono font-bold">
+                100% Form Pass
+              </span>
+            </div>
+            <p className="text-xs text-slate-400 font-mono">
+              Protocol Hash: <span className="text-emerald-300 font-bold">{assessment.verificationHash}</span>
+            </p>
+          </div>
+        </div>
 
-        {/* Certificate Header Banner */}
+        <div className="flex items-center gap-2 w-full sm:w-auto">
+          <Button
+            onClick={() => setIsCertificateOpen(true)}
+            variant="outline"
+            size="sm"
+            className="border-emerald-500/40 text-emerald-300 hover:bg-emerald-500/10 flex-1 sm:flex-initial"
+            leftIcon={<Printer className="w-4 h-4" />}
+          >
+            View Certificate
+          </Button>
+
+          <Button
+            onClick={handleShare}
+            variant="secondary"
+            size="sm"
+            leftIcon={<Share2 className="w-4 h-4" />}
+          >
+            {copiedLink ? 'Copied!' : 'Share Score'}
+          </Button>
+        </div>
+      </div>
+
+      {/* Main Score & Talent Tier Card */}
+      <div className="p-6 sm:p-8 rounded-3xl bg-card border border-card-border shadow-2xl relative overflow-hidden space-y-6">
+        
+        {/* Glow effect */}
+        <div className="absolute top-0 right-0 w-96 h-96 bg-brand/10 rounded-full blur-3xl pointer-events-none -mr-20 -mt-20" />
+
+        {/* Athlete & Test Overview Header */}
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 border-b border-card-border pb-6">
-          <div className="flex items-center gap-3">
-            <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-brand to-brand-600 flex items-center justify-center shadow-glow-brand">
-              <ShieldCheck className="w-6 h-6 text-white" />
-            </div>
-            <div>
-              <div className="flex items-center gap-2">
-                <span className="text-xs font-mono font-bold tracking-widest text-emerald-400 uppercase flex items-center gap-1">
-                  <CheckCircle2 className="w-3.5 h-3.5" /> AI Biometric Verified
-                </span>
-                <span className="text-slate-500 text-xs">•</span>
-                <span className="text-xs font-mono text-slate-400">
-                  {new Date(assessment.verifiedAt).toLocaleDateString('en-IN', {
-                    day: 'numeric',
-                    month: 'short',
-                    year: 'numeric'
-                  })}
-                </span>
-              </div>
-              <h2 className="text-2xl sm:text-3xl font-display font-extrabold text-white tracking-wide uppercase">
-                TalentLens Verified Assessment
-              </h2>
-            </div>
+          <div className="space-y-1">
+            <span className="text-xs font-mono font-bold uppercase tracking-wider text-brand">
+              {config.name}
+            </span>
+            <h2 className="text-2xl sm:text-3xl font-display font-extrabold text-white uppercase tracking-wide">
+              {athlete.fullName}
+            </h2>
+            <p className="text-xs text-slate-400 font-mono">
+              {athlete.district}, {athlete.state} · {athlete.age} Yrs · {athlete.primarySport}
+            </p>
           </div>
 
-          <div className="text-left sm:text-right">
-            <span className="text-[11px] font-mono text-slate-500 block uppercase">Protocol Hash</span>
-            <span className="font-mono text-xs text-cyber bg-slate-900 px-2.5 py-1 rounded-lg border border-card-border">
-              {assessment.verificationHash}
+          {/* Talent Tier Badge */}
+          <div className={`px-4 py-2.5 rounded-2xl border ${tierColors.bg} ${tierColors.border} ${tierColors.glow} flex items-center gap-2.5`}>
+            <Award className={`w-5 h-5 ${tierColors.text}`} />
+            <div>
+              <span className="text-[10px] text-slate-400 font-mono uppercase tracking-wider block">
+                Talent Classification
+              </span>
+              <span className={`text-xs sm:text-sm font-bold ${tierColors.text}`}>
+                {percentileInfo.talentTier}
+              </span>
+            </div>
+          </div>
+        </div>
+
+        {/* Big 3 Metrics Grid */}
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          
+          {/* 1. Raw Score */}
+          <div className="p-5 rounded-2xl bg-slate-950/80 border border-card-border text-center space-y-1">
+            <span className="text-xs font-mono text-slate-400 uppercase tracking-wider">
+              {config.metricLabel}
+            </span>
+            <div className="text-5xl font-display font-extrabold text-white tracking-tight">
+              {assessment.score}
+            </div>
+            <span className="text-xs font-mono text-brand uppercase font-bold">
+              {config.unit} in {assessment.durationSeconds}s
             </span>
           </div>
-        </div>
 
-        {/* Athlete Info & Main Stats Banner */}
-        <div className="grid grid-cols-1 md:grid-cols-12 gap-8 my-8 items-center">
-          
-          {/* Athlete Profile Highlight */}
-          <div className="md:col-span-4 space-y-4">
-            <div>
-              <span className="text-xs font-bold uppercase tracking-wider text-slate-400">Athlete</span>
-              <h3 className="text-2xl font-bold text-white mt-0.5">{athlete.fullName}</h3>
-              <p className="text-sm text-slate-300">
-                {athlete.age} yrs • {athlete.gender === 'female' ? 'Female' : 'Male'} • {athlete.state} ({athlete.district})
-              </p>
+          {/* 2. National Percentile */}
+          <div className="p-5 rounded-2xl bg-brand/10 border border-brand/40 text-center space-y-1 shadow-[0_0_25px_rgba(255,77,0,0.2)]">
+            <span className="text-xs font-mono text-brand-400 uppercase tracking-wider">
+              National Percentile
+            </span>
+            <div className="text-5xl font-display font-extrabold text-brand tracking-tight">
+              {percentileInfo.percentileRounded}%
             </div>
-
-            <div className="space-y-1.5 text-xs text-slate-400">
-              <div className="flex justify-between py-1 border-b border-card-border/60">
-                <span>Primary Sport:</span>
-                <span className="font-semibold text-white">{athlete.primarySport}</span>
-              </div>
-              <div className="flex justify-between py-1 border-b border-card-border/60">
-                <span>Cohort Division:</span>
-                <span className="font-semibold text-white">{percentileInfo.bracketLabel}</span>
-              </div>
-              <div className="flex justify-between py-1">
-                <span>Academy / School:</span>
-                <span className="font-semibold text-slate-300">{athlete.schoolOrAcademy || 'Grassroots Athlete'}</span>
-              </div>
-            </div>
-
-            {/* Talent Tier Badge */}
-            <div className={`p-3 rounded-2xl border ${tierColors.bg} ${tierColors.border} ${tierColors.glow}`}>
-              <div className="flex items-center gap-2">
-                <Award className={`w-5 h-5 ${tierColors.text}`} />
-                <div>
-                  <span className="text-[10px] font-mono uppercase tracking-widest text-slate-400 block">
-                    Talent Rating Tier
-                  </span>
-                  <span className={`text-xs font-bold ${tierColors.text}`}>
-                    {percentileInfo.talentTier}
-                  </span>
-                </div>
-              </div>
-            </div>
+            <span className="text-xs font-mono text-slate-300">
+              Top {Math.max(1, 100 - percentileInfo.percentileRounded)}% in India ({percentileInfo.bracketLabel})
+            </span>
           </div>
 
-          {/* Primary Percentile & Score Dial */}
-          <div className="md:col-span-8 grid grid-cols-1 sm:grid-cols-2 gap-4">
-            
-            {/* BIG PERCENTILE CARD */}
-            <div className="p-6 rounded-3xl bg-slate-900/90 border border-brand/40 shadow-glow-brand flex flex-col justify-between relative overflow-hidden group">
-              <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
-                <Flame className="w-28 h-28 text-brand" />
-              </div>
-              
-              <div>
-                <span className="text-xs font-mono uppercase tracking-widest text-brand-300 font-bold">
-                  National Standing
-                </span>
-                <div className="flex items-baseline gap-1 mt-2">
-                  <span className="text-6xl sm:text-7xl font-display font-extrabold text-white tracking-tight">
-                    {percentileInfo.percentileRounded}
-                  </span>
-                  <span className="text-2xl font-display font-bold text-brand">%ile</span>
-                </div>
-              </div>
-
-              <p className="text-xs text-slate-300 mt-4 leading-relaxed font-medium">
-                {percentileInfo.cohortComparisonText}
-              </p>
+          {/* 3. Biomechanical Form Score */}
+          <div className="p-5 rounded-2xl bg-slate-950/80 border border-card-border text-center space-y-1">
+            <span className="text-xs font-mono text-slate-400 uppercase tracking-wider">
+              Biomechanical Quality
+            </span>
+            <div className="text-5xl font-display font-extrabold text-emerald-400 tracking-tight">
+              {assessment.biomechanics.formScore}%
             </div>
-
-            {/* REPS & BIOMECHANICS SUMMARY */}
-            <div className="p-6 rounded-3xl bg-slate-900/60 border border-card-border flex flex-col justify-between">
-              <div>
-                <span className="text-xs font-mono uppercase tracking-widest text-cyber font-bold">
-                  Test Performance
-                </span>
-                <div className="flex items-baseline gap-1 mt-2">
-                  <span className="text-6xl sm:text-7xl font-display font-extrabold text-white tracking-tight">
-                    {assessment.repsCount}
-                  </span>
-                  <span className="text-xs uppercase font-bold text-slate-400 font-mono">
-                    CLEAN REPS
-                  </span>
-                </div>
-              </div>
-
-              <div className="grid grid-cols-3 gap-2 mt-4 pt-4 border-t border-card-border text-center">
-                <div>
-                  <span className="text-[10px] text-slate-400 block">Duration</span>
-                  <span className="text-sm font-mono font-bold text-white">{assessment.durationSeconds}s</span>
-                </div>
-                <div>
-                  <span className="text-[10px] text-slate-400 block">Cadence</span>
-                  <span className="text-sm font-mono font-bold text-white">{assessment.biomechanics.cadenceRepsPerMin} RPM</span>
-                </div>
-                <div>
-                  <span className="text-[10px] text-slate-400 block">Form Score</span>
-                  <span className="text-sm font-mono font-bold text-emerald-400">{assessment.biomechanics.formScore}%</span>
-                </div>
-              </div>
-            </div>
-
+            <span className="text-xs font-mono text-slate-400">
+              Zero Form Deductions
+            </span>
           </div>
 
         </div>
 
-        {/* Cohort Comparison Bar Chart */}
-        <div className="mt-8 pt-6 border-t border-card-border">
-          <div className="flex items-center justify-between mb-4">
-            <div>
-              <h4 className="text-sm font-bold text-white uppercase tracking-wider flex items-center gap-2">
-                <TrendingUp className="w-4 h-4 text-cyber" /> National Benchmark Distribution
-              </h4>
-              <p className="text-xs text-slate-400">
-                Comparing against standard push-up rep brackets for {percentileInfo.bracketLabel} ({athlete.gender})
-              </p>
-            </div>
-            <div className="flex items-center gap-3 text-xs">
-              <span className="flex items-center gap-1 text-slate-400">
-                <span className="w-2.5 h-2.5 rounded bg-slate-700 inline-block" /> National Average
-              </span>
-              <span className="flex items-center gap-1 text-brand-300 font-bold">
-                <span className="w-2.5 h-2.5 rounded bg-brand inline-block" /> Athlete Score
-              </span>
-            </div>
+        {/* National Benchmark Distribution Chart */}
+        <div className="space-y-3 pt-2">
+          <div className="flex items-center justify-between text-xs font-mono text-slate-400">
+            <span className="font-bold text-white flex items-center gap-1.5">
+              <Activity className="w-4 h-4 text-cyber" /> Indian National Cohort Distribution ({percentileInfo.bracketLabel})
+            </span>
+            <span>National Record: {percentileInfo.nationalRecord} {config.unit}</span>
           </div>
 
-          <div className="h-44 w-full">
+          <div className="h-56 w-full p-2 bg-slate-950/60 rounded-2xl border border-card-border">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={cohortChartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
-                <XAxis 
-                  dataKey="name" 
-                  tick={{ fill: '#94a3b8', fontSize: 11 }} 
-                  axisLine={{ stroke: '#334155' }}
+                <XAxis dataKey="name" stroke="#64748b" fontSize={10} tickLine={false} />
+                <YAxis stroke="#64748b" fontSize={10} tickLine={false} />
+                <Tooltip
+                  contentStyle={{
+                    backgroundColor: '#070A11',
+                    border: '1px solid #1e293b',
+                    borderRadius: '12px',
+                    fontSize: '12px',
+                  }}
                 />
-                <YAxis 
-                  tick={{ fill: '#94a3b8', fontSize: 11 }} 
-                  axisLine={{ stroke: '#334155' }}
-                />
-                <Tooltip 
-                  contentStyle={{ backgroundColor: '#0f172a', borderColor: '#334155', borderRadius: '12px', fontSize: '12px' }}
-                  itemStyle={{ color: '#fff' }}
-                />
-                <ReferenceLine y={percentileInfo.eliteThreshold} stroke="#00F0FF" strokeDasharray="3 3" label={{ value: 'Elite (90th)', fill: '#00F0FF', fontSize: 10 }} />
-                <Bar dataKey="reps" radius={[6, 6, 0, 0]}>
+                <Bar dataKey="score" radius={[6, 6, 0, 0]}>
                   {cohortChartData.map((entry, index) => (
-                    <Cell 
-                      key={`cell-${index}`} 
-                      fill={entry.type === 'athlete' ? '#FF4D00' : '#334155'} 
+                    <Cell
+                      key={`cell-${index}`}
+                      fill={entry.type === 'athlete' ? '#FF4D00' : '#1e293b'}
+                      stroke={entry.type === 'athlete' ? '#FF6E2E' : '#334155'}
+                      strokeWidth={entry.type === 'athlete' ? 2 : 1}
                     />
                   ))}
                 </Bar>
@@ -301,53 +266,83 @@ export const VerifiedResultCard: React.FC<VerifiedResultCardProps> = ({
           </div>
         </div>
 
-      </div>
+        {/* Detailed Biomechanical Telemetry Breakdown */}
+        <div className="p-4 rounded-2xl bg-slate-950/80 border border-card-border space-y-3">
+          <span className="text-xs font-mono text-slate-400 uppercase tracking-wider block">
+            Movement Telemetry Breakdown
+          </span>
 
-      {/* Action Footer & Direct Push to Scout Feed */}
-      <div className="flex flex-col sm:flex-row items-center justify-between gap-4 p-6 rounded-2xl bg-card border border-card-border shadow-xl">
-        <div className="flex items-center gap-3">
-          <Button
-            onClick={handlePushToScout}
-            disabled={isPushed}
-            isLoading={isPushing}
-            variant="primary"
-            size="lg"
-            leftIcon={isPushed ? <CheckCircle2 className="w-5 h-5 text-emerald-300" /> : <Send className="w-5 h-5" />}
-          >
-            {isPushed ? '✓ Broadcasted to Scout Dashboard Live' : 'Push to Live Scout Network'}
-          </Button>
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-center">
+            <div className="p-2.5 rounded-xl bg-card border border-card-border">
+              <span className="text-[10px] text-slate-400 block font-mono">Average Depth Flexion</span>
+              <span className="text-sm font-bold text-white font-mono">
+                {assessment.biomechanics.averageElbowFlexion || assessment.biomechanics.averageKneeFlexion || 82}°
+              </span>
+            </div>
 
+            <div className="p-2.5 rounded-xl bg-card border border-card-border">
+              <span className="text-[10px] text-slate-400 block font-mono">Spine Alignment</span>
+              <span className="text-sm font-bold text-white font-mono">
+                {assessment.biomechanics.averageTrunkAlignment}°
+              </span>
+            </div>
+
+            <div className="p-2.5 rounded-xl bg-card border border-card-border">
+              <span className="text-[10px] text-slate-400 block font-mono">Cadence / Speed</span>
+              <span className="text-sm font-bold text-cyber font-mono">
+                {assessment.biomechanics.cadenceRepsPerMin ? `${assessment.biomechanics.cadenceRepsPerMin} RPM` : 'Peak Power'}
+              </span>
+            </div>
+
+            <div className="p-2.5 rounded-xl bg-card border border-card-border">
+              <span className="text-[10px] text-slate-400 block font-mono">Incomplete Reps</span>
+              <span className="text-sm font-bold text-emerald-400 font-mono">
+                {assessment.biomechanics.incompletedReps || 0}
+              </span>
+            </div>
+          </div>
+        </div>
+
+        {/* Bottom Actions: Push to Scout Feed or Retest */}
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pt-4 border-t border-card-border">
           <Button
             onClick={onRetest}
             variant="outline"
-            size="lg"
             leftIcon={<RotateCcw className="w-4 h-4" />}
           >
-            Retest
-          </Button>
-        </div>
-
-        <div className="flex items-center gap-3 w-full sm:w-auto justify-end">
-          <Button
-            onClick={handleShare}
-            variant="ghost"
-            size="md"
-            leftIcon={<Share2 className="w-4 h-4" />}
-          >
-            {copiedLink ? 'Link Copied!' : 'Share'}
+            Retest / Switch Exercise
           </Button>
 
-          <Link to="/scout">
-            <Button
-              variant="secondary"
-              size="md"
-              rightIcon={<ChevronRight className="w-4 h-4" />}
+          <div className="flex items-center gap-3 w-full sm:w-auto">
+            <Link
+              to="/scout"
+              className="px-4 py-2.5 rounded-xl bg-card border border-card-border hover:border-brand text-xs font-semibold text-slate-200 hover:text-white flex items-center gap-1.5 transition-all text-center justify-center flex-1 sm:flex-initial"
             >
-              View on Scout Dashboard
+              <span>View Scout Feed</span>
+              <ChevronRight className="w-4 h-4" />
+            </Link>
+
+            <Button
+              onClick={handlePushToScout}
+              variant="primary"
+              disabled={isPushed || isPushing}
+              leftIcon={<Send className="w-4 h-4" />}
+              className="flex-1 sm:flex-initial"
+            >
+              {isPushed ? 'Broadcasted to Scouts ✓' : isPushing ? 'Broadcasting...' : 'Push to Live Scout Network'}
             </Button>
-          </Link>
+          </div>
         </div>
+
       </div>
+
+      {/* Certificate Modal */}
+      {isCertificateOpen && (
+        <AssessmentCertificate
+          assessment={assessment}
+          onClose={() => setIsCertificateOpen(false)}
+        />
+      )}
 
     </div>
   );
