@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="brand_orange">#FF4D00</color>
+    <color name="cyber_cyan">#00F0FF</color>
+    <color name="verified_emerald">#10B981</color>
+    <color name="background_dark">#070A11</color>
+    <color name="card_background">#0F172A</color>
+</resources>

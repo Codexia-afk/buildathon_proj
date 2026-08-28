@@ -112,6 +112,10 @@ fun MainAppScaffold() {
             composable(Screen.Workout.route) {
                 WorkoutScreen(
                     athlete = currentAthlete,
+                    onProfileChange = { updated ->
+                        currentAthlete = updated
+                        AthleteRepository.updateProfile(updated)
+                    },
                     onFinishWorkout = { result ->
                         latestAssessment = result
                         navController.navigate(Screen.Result.route)

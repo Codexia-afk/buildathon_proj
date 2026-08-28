@@ -1,0 +1,5 @@
+<resources>
+    <string name="app_name">TalentLens</string>
+    <string name="app_tagline">AI Sports Talent Assessment Protocol</string>
+    <string name="camera_permission_required">Camera access is required for AI pose detection.</string>
+</resources>

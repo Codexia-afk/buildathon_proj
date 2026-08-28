@@ -34,16 +34,21 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.content.ContextCompat
 import com.talentlens.app.audio.VoiceCoachService
+import com.talentlens.app.data.AthleteRepository
 import com.talentlens.app.engine.*
 import com.talentlens.app.ml.PoseDetectorHelper
 import com.talentlens.app.model.*
 import com.talentlens.app.ui.components.PoseSkeletonOverlay
+import com.talentlens.app.ui.components.ProfileSetupDialog
 import com.talentlens.app.ui.theme.*
 import java.util.concurrent.Executors
+import kotlin.math.max
+import kotlin.math.sin
 
 @Composable
 fun WorkoutScreen(
     athlete: AthleteProfile,
+    onProfileChange: (AthleteProfile) -> Unit,
     onFinishWorkout: (AssessmentResult) -> Unit
 ) {
     val context = LocalContext.current
@@ -78,6 +83,8 @@ fun WorkoutScreen(
     var isFrontCamera by remember { mutableStateOf(true) }
     var elapsedSeconds by remember { mutableStateOf(0) }
     var isTimerRunning by remember { mutableStateOf(false) }
+    var isSimulating by remember { mutableStateOf(false) }
+    var showProfileDialog by remember { mutableStateOf(false) }
 
     // Biomechanical FSM Engine
     val engine = remember(selectedExercise) {
@@ -109,14 +116,70 @@ fun WorkoutScreen(
         }
     }
 
+    // AI Simulation Generator for Testing / Headless environments
+    LaunchedEffect(isSimulating, selectedExercise) {
+        var frame = 0
+        while (isSimulating) {
+            kotlinx.coroutines.delay(33)
+            frame++
+            val t = frame * 0.05f
+
+            val fake = MutableList(33) { Point2D(0.5f, 0.5f, 0.95f) }
+
+            when (selectedExercise) {
+                ExerciseType.PUSHUPS -> {
+                    val progress = (sin(t * 2.5f) + 1f) / 2f
+                    val shoulderY = 0.55f - progress * 0.15f
+                    val hipY = 0.52f - progress * 0.14f
+                    fake[12] = Point2D(0.35f, shoulderY, 0.99f)
+                    fake[14] = Point2D(0.38f - (1f - progress) * 0.05f, 0.52f + (1f - progress) * 0.04f, 0.99f)
+                    fake[16] = Point2D(0.36f, 0.68f, 0.99f)
+                    fake[24] = Point2D(0.58f, hipY, 0.99f)
+                    fake[26] = Point2D(0.72f, hipY + 0.05f, 0.98f)
+                    fake[28] = Point2D(0.84f, 0.70f, 0.99f)
+                }
+                ExerciseType.SQUATS -> {
+                    val progress = (sin(t * 2.2f) + 1f) / 2f
+                    val hipY = 0.62f - progress * 0.22f
+                    fake[12] = Point2D(0.48f, hipY - 0.25f, 0.99f)
+                    fake[24] = Point2D(0.50f, hipY, 0.99f)
+                    fake[26] = Point2D(0.48f + (1f - progress) * 0.04f, 0.65f, 0.99f)
+                    fake[28] = Point2D(0.50f, 0.88f, 0.99f)
+                }
+                ExerciseType.PLANK -> {
+                    fake[12] = Point2D(0.32f, 0.50f, 0.99f)
+                    fake[14] = Point2D(0.32f, 0.65f, 0.99f)
+                    fake[16] = Point2D(0.38f, 0.65f, 0.99f)
+                    fake[24] = Point2D(0.56f, 0.51f, 0.99f)
+                    fake[26] = Point2D(0.70f, 0.53f, 0.98f)
+                    fake[28] = Point2D(0.84f, 0.55f, 0.99f)
+                }
+                ExerciseType.VERTICAL_JUMP -> {
+                    val cycle = t % 4.0f
+                    val hipY = if (cycle < 1.5f) 0.48f else if (cycle < 2.3f) 0.62f else 0.48f - (sin((cycle - 2.3f) / 0.7f * Math.PI.toFloat()) * 0.22f)
+                    val ankleY = if (cycle in 2.3f..3.0f) 0.85f - (sin((cycle - 2.3f) / 0.7f * Math.PI.toFloat()) * 0.22f) else 0.85f
+                    fake[12] = Point2D(0.50f, hipY - 0.25f, 0.99f)
+                    fake[24] = Point2D(0.50f, hipY, 0.99f)
+                    fake[26] = Point2D(0.50f, 0.68f, 0.99f)
+                    fake[28] = Point2D(0.50f, ankleY, 0.99f)
+                }
+            }
+
+            landmarks = fake
+            engine.processFrame(fake)
+        }
+    }
+
     // Pose detector
     val cameraExecutor = remember { Executors.newSingleThreadExecutor() }
     val poseDetector = remember {
         PoseDetectorHelper(
             context = context,
             onResults = { detectedLandmarks, _ ->
-                landmarks = detectedLandmarks
-                engine.processFrame(detectedLandmarks)
+                if (!isSimulating) {
+                    landmarks = detectedLandmarks
+                    engine.processFrame(detectedLandmarks)
+                }
             },
             onError = { /* Log */ }
         )
@@ -136,31 +199,44 @@ fun WorkoutScreen(
             .padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
-        // Exercise Selector Carousel
-        LazyRow(
-            horizontalArrangement = Arrangement.spacedBy(8.dp),
-            modifier = Modifier.fillMaxWidth()
+        // Exercise Selector Carousel & Edit Profile Button
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
         ) {
-            items(ExerciseType.values()) { ex ->
-                val isSelected = ex == selectedExercise
-                Surface(
-                    color = if (isSelected) CardBackground else CardBackground.copy(alpha = 0.5f),
-                    shape = RoundedCornerShape(16.dp),
-                    border = androidx.compose.foundation.BorderStroke(
-                        if (isSelected) 1.5.dp else 1.dp,
-                        if (isSelected) BrandOrange else CardBorder
-                    ),
-                    modifier = Modifier.clickable(enabled = engine.state == FSMWorkoutState.IDLE) {
-                        selectedExercise = ex
-                        engine.reset()
-                        elapsedSeconds = 0
-                    }
-                ) {
-                    Column(modifier = Modifier.padding(horizontal = 14.dp, vertical = 8.dp)) {
-                        Text(ex.category.uppercase(), color = if (isSelected) BrandOrange else TextSecondary, fontSize = 9.sp, fontWeight = FontWeight.Bold)
-                        Text(ex.shortName, color = TextPrimary, fontSize = 13.sp, fontWeight = FontWeight.Bold)
+            LazyRow(
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                modifier = Modifier.weight(1f)
+            ) {
+                items(ExerciseType.values()) { ex ->
+                    val isSelected = ex == selectedExercise
+                    Surface(
+                        color = if (isSelected) CardBackground else CardBackground.copy(alpha = 0.5f),
+                        shape = RoundedCornerShape(16.dp),
+                        border = androidx.compose.foundation.BorderStroke(
+                            if (isSelected) 1.5.dp else 1.dp,
+                            if (isSelected) BrandOrange else CardBorder
+                        ),
+                        modifier = Modifier.clickable(enabled = engine.state == FSMWorkoutState.IDLE) {
+                            selectedExercise = ex
+                            engine.reset()
+                            elapsedSeconds = 0
+                        }
+                    ) {
+                        Column(modifier = Modifier.padding(horizontal = 14.dp, vertical = 8.dp)) {
+                            Text(ex.category.uppercase(), color = if (isSelected) BrandOrange else TextSecondary, fontSize = 9.sp, fontWeight = FontWeight.Bold)
+                            Text(ex.shortName, color = TextPrimary, fontSize = 13.sp, fontWeight = FontWeight.Bold)
+                        }
                     }
                 }
+            }
+
+            IconButton(
+                onClick = { showProfileDialog = true },
+                modifier = Modifier.background(CardBackground, CircleShape)
+            ) {
+                Icon(Icons.Default.Person, contentDescription = "Edit Profile", tint = BrandOrange)
             }
         }
 
@@ -173,7 +249,7 @@ fun WorkoutScreen(
                 .background(Color.Black)
                 .border(2.dp, CardBorder, RoundedCornerShape(24.dp))
         ) {
-            if (hasCameraPermission) {
+            if (hasCameraPermission && !isSimulating) {
                 AndroidView(
                     factory = { ctx ->
                         val previewView = PreviewView(ctx)
@@ -223,19 +299,15 @@ fun WorkoutScreen(
                     },
                     modifier = Modifier.fillMaxSize()
                 )
-
-                // Pose Skeleton Canvas Overlay
-                PoseSkeletonOverlay(
-                    landmarks = landmarks,
-                    exerciseType = selectedExercise,
-                    primaryAngle = engine.currentPrimaryAngle,
-                    isTargetDepthReached = engine.depthProgressPercent >= 100
-                )
-            } else {
-                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                    Text("Camera permission required for live assessment", color = TextSecondary, fontSize = 13.sp)
-                }
             }
+
+            // Pose Skeleton Canvas Overlay
+            PoseSkeletonOverlay(
+                landmarks = landmarks,
+                exerciseType = selectedExercise,
+                primaryAngle = engine.currentPrimaryAngle,
+                isTargetDepthReached = engine.depthProgressPercent >= 100
+            )
 
             // Top HUD Controls
             Row(
@@ -269,8 +341,14 @@ fun WorkoutScreen(
                     }
                 }
 
-                // Camera Flip & Voice Coach Mute
+                // Camera Flip & Voice Coach Mute & AI Simulation Toggle
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    IconButton(
+                        onClick = { isSimulating = !isSimulating },
+                        modifier = Modifier.background(if (isSimulating) CyberCyan.copy(alpha = 0.3f) else BackgroundDark.copy(alpha = 0.8f), CircleShape)
+                    ) {
+                        Icon(Icons.Default.SmartToy, contentDescription = "Simulate AI", tint = if (isSimulating) CyberCyan else TextPrimary)
+                    }
                     IconButton(
                         onClick = { isFrontCamera = !isFrontCamera },
                         modifier = Modifier.background(BackgroundDark.copy(alpha = 0.8f), CircleShape)
@@ -351,6 +429,7 @@ fun WorkoutScreen(
                 Button(
                     onClick = {
                         isTimerRunning = false
+                        isSimulating = false
                         val biomechanics = engine.finish(elapsedSeconds)
                         val calc = PercentileEngine.calculate(
                             score = engine.score,
@@ -376,6 +455,7 @@ fun WorkoutScreen(
                             biomechanics = biomechanics,
                             verificationHash = hash
                         )
+                        AthleteRepository.saveAssessment(result)
                         voiceCoach.speak("Assessment verified! ${calc.talentTier.displayName}", true)
                         onFinishWorkout(result)
                     },
@@ -389,5 +469,16 @@ fun WorkoutScreen(
                 }
             }
         }
+    }
+
+    if (showProfileDialog) {
+        ProfileSetupDialog(
+            initialProfile = athlete,
+            onDismiss = { showProfileDialog = false },
+            onSave = { updated ->
+                onProfileChange(updated)
+                showProfileDialog = false
+            }
+        )
     }
 }
