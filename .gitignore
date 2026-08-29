@@ -30,3 +30,11 @@ dist-ssr/
 .env.development.local
 .env.test.local
 .env.production.local
+
+# Xcode & Build Artifacts
+build/
+DerivedData/
+*.xcuserstate
+xcuserdata/
+*.xcworkspace/xcuserdata/
+

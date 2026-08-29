@@ -24,8 +24,8 @@ public struct HomeScreen: View {
             TLTheme.backgroundDark.edgesIgnoringSafeArea(.all)
             
             ScrollView {
-                VStack(spacing: 20) {
-                    Spacer().frame(height: 10)
+                VStack(spacing: 18) {
+                    Spacer().frame(height: 6)
                     
                     // Brand Title
                     Text("TALENTLENS")
@@ -39,14 +39,12 @@ public struct HomeScreen: View {
                         .multilineTextAlignment(.center)
                         .lineSpacing(4)
                     
-                    Text("Turn your iPhone camera into an Olympic-grade AI athletic testing lab. On-device Apple Vision pose estimation verifies biomechanics and benchmarks scores against national Indian percentiles.")
+                    Text("Turn your iPhone camera into an Olympic-grade AI athletic testing lab. Choose your sport to see tailored gym practice drills, real-time pose tracking, and national percentiles.")
                         .font(.system(size: 13))
                         .foregroundColor(TLTheme.textSecondary)
                         .multilineTextAlignment(.center)
                         .lineSpacing(3)
                         .padding(.horizontal, 16)
-                    
-                    Spacer().frame(height: 4)
                     
                     // Dual Entry Cards
                     // 1. Athlete Card
@@ -65,10 +63,10 @@ public struct HomeScreen: View {
                                 Text("I'M AN ATHLETE")
                                     .font(.system(size: 11, weight: .bold))
                                     .foregroundColor(TLTheme.brandOrange)
-                                Text("Test Physical Fitness")
+                                Text("Sport Gym Lab & Test")
                                     .font(.system(size: 18, weight: .heavy))
                                     .foregroundColor(TLTheme.textPrimary)
-                                Text("Push-ups, Squats, Plank & Vert Jump")
+                                Text("Cricket, Wrestling, Football, Badminton & More")
                                     .font(.system(size: 11))
                                     .foregroundColor(TLTheme.textSecondary)
                             }
@@ -79,11 +77,11 @@ public struct HomeScreen: View {
                                 .foregroundColor(TLTheme.brandOrange)
                                 .font(.system(size: 16, weight: .bold))
                         }
-                        .padding(20)
+                        .padding(18)
                         .background(TLTheme.cardBackground)
-                        .cornerRadius(24)
+                        .cornerRadius(22)
                         .overlay(
-                            RoundedRectangle(cornerRadius: 24)
+                            RoundedRectangle(cornerRadius: 22)
                                 .stroke(TLTheme.brandOrange.opacity(0.6), lineWidth: 1.5)
                         )
                     }
@@ -119,20 +117,88 @@ public struct HomeScreen: View {
                                 .foregroundColor(TLTheme.textSecondary)
                                 .font(.system(size: 16, weight: .bold))
                         }
-                        .padding(20)
+                        .padding(18)
                         .background(TLTheme.cardBackground)
-                        .cornerRadius(24)
+                        .cornerRadius(22)
                         .overlay(
-                            RoundedRectangle(cornerRadius: 24)
+                            RoundedRectangle(cornerRadius: 22)
                                 .stroke(TLTheme.cardBorder, lineWidth: 1)
                         )
                     }
                     .padding(.horizontal)
                     
-                    Spacer().frame(height: 6)
+                    // 3. Sport-Specific Gym Practice Directory
+                    VStack(alignment: .leading, spacing: 12) {
+                        HStack {
+                            Text("SPORT-SPECIFIC GYM PRACTICE BATTERIES")
+                                .font(.system(size: 11, weight: .bold, design: .monospaced))
+                                .foregroundColor(TLTheme.brandOrange)
+                            Spacer()
+                            Text("10 Sports")
+                                .font(.system(size: 10, weight: .bold))
+                                .foregroundColor(TLTheme.textSecondary)
+                        }
+                        
+                        Text("Select your sport to practice the exact biomechanical qualities scouts look for:")
+                            .font(.system(size: 12))
+                            .foregroundColor(TLTheme.textSecondary)
+                        
+                        ScrollView(.horizontal, showsIndicators: false) {
+                            HStack(spacing: 12) {
+                                ForEach(SportType.allCases) { sp in
+                                    let profile = SportTrainingDatabase.profile(for: sp)
+                                    Button(action: onStartAthleteAssessment) {
+                                        VStack(alignment: .leading, spacing: 8) {
+                                            HStack {
+                                                Text(sp.iconEmoji)
+                                                    .font(.title2)
+                                                Text(sp.displayName.components(separatedBy: " (").first ?? sp.displayName)
+                                                    .font(.system(size: 14, weight: .bold))
+                                                    .foregroundColor(TLTheme.textPrimary)
+                                                Spacer()
+                                                Image(systemName: "chevron.right")
+                                                    .foregroundColor(TLTheme.textSecondary)
+                                                    .font(.caption)
+                                            }
+                                            
+                                            Text(profile.tagline)
+                                                .font(.system(size: 11))
+                                                .foregroundColor(TLTheme.textSecondary)
+                                                .lineLimit(2)
+                                                .frame(height: 32, alignment: .topLeading)
+                                            
+                                            Divider().background(TLTheme.cardBorder)
+                                            
+                                            HStack(spacing: 6) {
+                                                ForEach(profile.recommendedDrills.prefix(3)) { drill in
+                                                    Text(drill.exerciseType.shortName)
+                                                        .font(.system(size: 9, weight: .bold))
+                                                        .padding(.horizontal, 6)
+                                                        .padding(.vertical, 3)
+                                                        .background(TLTheme.brandOrange.opacity(0.15))
+                                                        .foregroundColor(TLTheme.brandOrange)
+                                                        .cornerRadius(6)
+                                                }
+                                            }
+                                        }
+                                        .padding(14)
+                                        .frame(width: 220)
+                                        .background(TLTheme.cardBackground)
+                                        .cornerRadius(16)
+                                        .overlay(RoundedRectangle(cornerRadius: 16).stroke(TLTheme.cardBorder, lineWidth: 1))
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    .padding(16)
+                    .background(TLTheme.cardBackground.opacity(0.6))
+                    .cornerRadius(20)
+                    .overlay(RoundedRectangle(cornerRadius: 20).stroke(TLTheme.cardBorder, lineWidth: 1))
+                    .padding(.horizontal)
                     
                     // Feature Highlights Card
-                    VStack(alignment: .leading, spacing: 12) {
+                    VStack(alignment: .leading, spacing: 10) {
                         HStack(spacing: 10) {
                             Image(systemName: "bolt.fill")
                                 .foregroundColor(TLTheme.brandOrange)
@@ -160,16 +226,13 @@ public struct HomeScreen: View {
                                 .foregroundColor(TLTheme.textPrimary)
                         }
                     }
-                    .padding(18)
+                    .padding(16)
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .background(TLTheme.cardBackground)
-                    .cornerRadius(20)
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 20)
-                            .stroke(TLTheme.cardBorder, lineWidth: 1)
-                    )
+                    .cornerRadius(18)
+                    .overlay(RoundedRectangle(cornerRadius: 18).stroke(TLTheme.cardBorder, lineWidth: 1))
                     .padding(.horizontal)
-                    .padding(.bottom, 24)
+                    .padding(.bottom, 20)
                 }
             }
         }

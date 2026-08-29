@@ -25,6 +25,14 @@ public struct ResultScreen: View {
         self.onNavigateToScout = onNavigateToScout
     }
     
+    private var sportProfile: SportTrainingProfile {
+        SportTrainingDatabase.profile(for: assessment.sport)
+    }
+    
+    private var drillInfo: SportTrainingDrill? {
+        sportProfile.recommendedDrills.first(where: { $0.exerciseType == assessment.exerciseType })
+    }
+    
     public var body: some View {
         ZStack {
             TLTheme.backgroundDark.edgesIgnoringSafeArea(.all)
@@ -60,9 +68,15 @@ public struct ResultScreen: View {
                     // Main Result Card
                     VStack(alignment: .leading, spacing: 16) {
                         VStack(alignment: .leading, spacing: 4) {
-                            Text(assessment.exerciseType.title.uppercased())
-                                .font(.system(size: 11, weight: .bold))
-                                .foregroundColor(TLTheme.brandOrange)
+                            HStack {
+                                Text(assessment.exerciseType.title.uppercased())
+                                    .font(.system(size: 11, weight: .bold))
+                                    .foregroundColor(TLTheme.brandOrange)
+                                Spacer()
+                                Text("\(assessment.sport.iconEmoji) \(assessment.sport.displayName)")
+                                    .font(.system(size: 11, weight: .bold))
+                                    .foregroundColor(TLTheme.cyberCyan)
+                            }
                             
                             Text(assessment.athleteName)
                                 .font(.system(size: 24, weight: .black))
@@ -115,6 +129,33 @@ public struct ResultScreen: View {
                                     .foregroundColor(TLTheme.textSecondary)
                             }
                             .frame(maxWidth: .infinity)
+                        }
+                        
+                        // Sport Readiness Context Card
+                        if let drill = drillInfo {
+                            VStack(alignment: .leading, spacing: 6) {
+                                HStack {
+                                    Text("SPORT SPECIFIC READINESS")
+                                        .font(.system(size: 10, weight: .bold, design: .monospaced))
+                                        .foregroundColor(TLTheme.cyberCyan)
+                                    Spacer()
+                                    Text(drill.importanceTier)
+                                        .font(.system(size: 9, weight: .bold))
+                                        .foregroundColor(TLTheme.brandOrange)
+                                }
+                                
+                                Text("Why it matters: \(drill.roleRationale)")
+                                    .font(.system(size: 11))
+                                    .foregroundColor(TLTheme.textPrimary)
+                                
+                                Text("Gym Standard: \(drill.gymTargetScore)")
+                                    .font(.system(size: 10, weight: .bold, design: .monospaced))
+                                    .foregroundColor(TLTheme.textSecondary)
+                            }
+                            .padding(12)
+                            .background(TLTheme.cardBackground.opacity(0.8))
+                            .cornerRadius(12)
+                            .overlay(RoundedRectangle(cornerRadius: 12).stroke(TLTheme.cardBorder, lineWidth: 1))
                         }
                         
                         // Talent Tier Badge
@@ -176,7 +217,7 @@ public struct ResultScreen: View {
                             HStack(spacing: 8) {
                                 Image(systemName: "arrow.clockwise")
                                     .foregroundColor(TLTheme.textSecondary)
-                                Text("Retest / Switch Exercise")
+                                Text("Retest / Switch Exercise Drill")
                                     .font(.system(size: 14))
                                     .foregroundColor(TLTheme.textSecondary)
                             }

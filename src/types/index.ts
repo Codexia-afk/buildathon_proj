@@ -152,3 +152,21 @@ export interface ExerciseConfig {
   standardDurationSec?: number;
   instructions: string[];
 }
+
+export interface SportTrainingDrill {
+  exerciseType: TestType;
+  roleRationale: string;
+  biomechanicalFocus: string;
+  gymTargetScore: string;
+  importanceTier: string;
+}
+
+export interface SportTrainingProfile {
+  sport: SportType;
+  iconEmoji: string;
+  tagline: string;
+  primaryQuality: string;
+  recommendedDrills: SportTrainingDrill[];
+  gymCoachingTip: string;
+}
+

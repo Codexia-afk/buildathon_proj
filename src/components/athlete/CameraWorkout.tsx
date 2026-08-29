@@ -20,7 +20,7 @@ import { useExerciseEngine } from '../../hooks/useExerciseEngine';
 import { PoseSkeletonCanvas } from './PoseSkeletonCanvas';
 import { LiveFormHUD } from './LiveFormHUD';
 import { VerifiedResultCard } from './VerifiedResultCard';
-import { calculatePercentile, EXERCISE_CONFIGS } from '../../services/percentileEngine';
+import { calculatePercentile, EXERCISE_CONFIGS, getSportProfile, SPORT_TRAINING_DATABASE } from '../../services/percentileEngine';
 import { saveAssessment } from '../../services/dataService';
 import { Button } from '../common/Button';
 
@@ -35,7 +35,8 @@ export const CameraWorkout: React.FC<CameraWorkoutProps> = ({
 }) => {
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const containerRef = useRef<HTMLDivElement | null>(null);
-  const [activeTest, setActiveTest] = useState<TestType>('pushups_standard');
+  const [selectedSport, setSelectedSport] = useState<string>(athlete.primarySport || 'Cricket');
+  const [activeTest, setActiveTest] = useState<TestType>('vertical_jump');
   const [completedAssessment, setCompletedAssessment] = useState<AssessmentResult | null>(null);
   const [videoDimensions, setVideoDimensions] = useState({ width: 640, height: 480 });
   const [isFullscreen, setIsFullscreen] = useState<boolean>(false);
@@ -180,44 +181,101 @@ export const CameraWorkout: React.FC<CameraWorkoutProps> = ({
           onRetest={handleRetest}
         />
       ) : (
-        <div className="space-y-6">
+        <div className="space-y-4">
           
-          {/* Multi-Exercise Selector Tabs */}
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3">
-            {(Object.keys(EXERCISE_CONFIGS) as TestType[]).map((key) => {
-              const cfg = EXERCISE_CONFIGS[key];
-              const isSelected = activeTest === key;
+          {/* Sport Selection Carousel */}
+          <div className="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-none">
+            {Object.keys(SPORT_TRAINING_DATABASE).map((sp) => {
+              const profile = SPORT_TRAINING_DATABASE[sp];
+              const isSelected = selectedSport === sp;
               return (
                 <button
-                  key={key}
-                  onClick={() => handleSelectTest(key)}
+                  key={sp}
+                  onClick={() => {
+                    if (workoutState === 'idle') {
+                      setSelectedSport(sp);
+                      if (profile.recommendedDrills[0]) {
+                        handleSelectTest(profile.recommendedDrills[0].exerciseType);
+                      }
+                    }
+                  }}
                   disabled={workoutState !== 'idle'}
-                  className={`p-3.5 rounded-2xl border text-left transition-all duration-200 flex flex-col justify-between ${
+                  className={`px-3 py-1.5 rounded-xl border text-xs font-bold whitespace-nowrap transition-all flex items-center gap-1.5 ${
                     isSelected
-                      ? 'bg-card border-brand/60 shadow-[0_0_20px_rgba(255,77,0,0.18)] text-white'
-                      : 'bg-card/40 border-card-border/70 hover:border-slate-700 text-slate-400 hover:text-slate-200'
+                      ? 'bg-brand text-white border-brand shadow-[0_0_15px_rgba(255,77,0,0.3)]'
+                      : 'bg-card text-slate-400 border-card-border hover:border-slate-600 hover:text-slate-200'
                   } ${workoutState !== 'idle' ? 'opacity-50 cursor-not-allowed' : ''}`}
                 >
-                  <div className="flex items-center justify-between mb-2">
-                    <span className="text-[10px] uppercase font-mono font-bold tracking-wider px-2 py-0.5 rounded-full bg-slate-900 border border-slate-800 text-slate-400">
-                      {cfg.category}
-                    </span>
-                    {isSelected && (
-                      <span className="w-2 h-2 rounded-full bg-brand animate-pulse" />
-                    )}
-                  </div>
-                  <div>
-                    <h3 className={`text-sm font-bold ${isSelected ? 'text-white' : 'text-slate-300'}`}>
-                      {cfg.name}
-                    </h3>
-                    <p className="text-[11px] text-slate-400 mt-0.5 line-clamp-1">
-                      Target: {cfg.metricLabel}
-                    </p>
-                  </div>
+                  <span>{profile.iconEmoji}</span>
+                  <span>{sp}</span>
                 </button>
               );
             })}
           </div>
+
+          {/* Sport Battery Drill Tabs */}
+          {(() => {
+            const currentProfile = getSportProfile(selectedSport);
+            const currentDrill = currentProfile.recommendedDrills.find(d => d.exerciseType === activeTest);
+
+            return (
+              <div className="space-y-3">
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3">
+                  {currentProfile.recommendedDrills.map((drill) => {
+                    const cfg = EXERCISE_CONFIGS[drill.exerciseType];
+                    const isSelected = activeTest === drill.exerciseType;
+                    return (
+                      <button
+                        key={drill.exerciseType}
+                        onClick={() => handleSelectTest(drill.exerciseType)}
+                        disabled={workoutState !== 'idle'}
+                        className={`p-3 rounded-2xl border text-left transition-all duration-200 flex flex-col justify-between ${
+                          isSelected
+                            ? 'bg-card border-brand/60 shadow-[0_0_20px_rgba(255,77,0,0.18)] text-white'
+                            : 'bg-card/40 border-card-border/70 hover:border-slate-700 text-slate-400 hover:text-slate-200'
+                        } ${workoutState !== 'idle' ? 'opacity-50 cursor-not-allowed' : ''}`}
+                      >
+                        <div className="flex items-center justify-between mb-1.5">
+                          <span className="text-[9px] uppercase font-mono font-bold tracking-wider px-1.5 py-0.5 rounded-md bg-slate-900 border border-slate-800 text-slate-400">
+                            {drill.importanceTier.split(' ')[0]}
+                          </span>
+                          {isSelected && (
+                            <span className="w-2 h-2 rounded-full bg-brand animate-pulse" />
+                          )}
+                        </div>
+                        <div>
+                          <h3 className={`text-xs font-bold ${isSelected ? 'text-white' : 'text-slate-300'}`}>
+                            {cfg.name}
+                          </h3>
+                          <p className="text-[10px] text-brand-400 font-mono font-semibold mt-0.5">
+                            {drill.gymTargetScore}
+                          </p>
+                        </div>
+                      </button>
+                    );
+                  })}
+                </div>
+
+                {/* Sport Drill Rationale & Coaching Tip Callout */}
+                {currentDrill && (
+                  <div className="p-3.5 rounded-2xl bg-cyber-500/10 border border-cyber-500/30 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-xs">
+                    <div className="flex items-start gap-2.5">
+                      <Zap className="w-4 h-4 text-cyber-400 mt-0.5 shrink-0" />
+                      <div>
+                        <p className="font-bold text-slate-200">
+                          <span className="text-cyber-400 font-mono">{currentProfile.iconEmoji} {selectedSport} Quality:</span> {currentDrill.roleRationale}
+                        </p>
+                        <p className="text-[11px] text-slate-400 mt-0.5">
+                          💡 <span className="text-slate-300 font-medium">Coaching Tip:</span> {currentProfile.gymCoachingTip}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+            );
+          })()}
+
 
           {/* Camera Frame Container */}
           <div 

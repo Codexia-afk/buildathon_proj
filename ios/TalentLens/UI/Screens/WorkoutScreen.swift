@@ -17,14 +17,17 @@ public struct WorkoutScreen: View {
     @StateObject private var poseDetector = PoseDetectorHelper()
     @StateObject private var voiceCoach = VoiceCoachService.shared
     
-    @State private var selectedExercise: ExerciseType = .pushups
+    @State private var selectedSport: SportType = .cricket
+    @State private var isSportBatteryMode: Bool = true
+    @State private var selectedExercise: ExerciseType = .verticalJump
     @State private var landmarks: [Point2D] = []
     @State private var elapsedSeconds: Int = 0
     @State private var isTimerRunning: Bool = false
     @State private var isSimulating: Bool = false
     @State private var showProfileSheet: Bool = false
+    @State private var showSportBatterySheet: Bool = false
     
-    @StateObject private var engine = ExerciseStateEngine(exerciseType: .pushups)
+    @StateObject private var engine = ExerciseStateEngine(exerciseType: .verticalJump)
     @State private var timerSubscription: AnyCancellable?
     
     public init(
@@ -35,6 +38,14 @@ public struct WorkoutScreen: View {
         self._athlete = athlete
         self.onProfileChange = onProfileChange
         self.onFinishWorkout = onFinishWorkout
+    }
+    
+    private var currentSportProfile: SportTrainingProfile {
+        SportTrainingDatabase.profile(for: selectedSport)
+    }
+    
+    private var currentDrillInfo: SportTrainingDrill? {
+        currentSportProfile.recommendedDrills.first(where: { $0.exerciseType == selectedExercise })
     }
     
     private func setupEngine() {
@@ -60,39 +71,35 @@ public struct WorkoutScreen: View {
         ZStack {
             TLTheme.backgroundDark.edgesIgnoringSafeArea(.all)
             
-            VStack(spacing: 12) {
-                // Exercise Carousel & Profile Button
-                HStack {
+            VStack(spacing: 8) {
+                // 1. Sport Selector Header & Profile Button
+                HStack(spacing: 8) {
                     ScrollView(.horizontal, showsIndicators: false) {
-                        HStack(spacing: 8) {
-                            ForEach(ExerciseType.allCases) { ex in
-                                let isSelected = (ex == selectedExercise)
+                        HStack(spacing: 6) {
+                            ForEach(SportType.allCases) { sp in
+                                let isSelected = (sp == selectedSport)
                                 Button(action: {
                                     if engine.state == .idle {
-                                        selectedExercise = ex
-                                        engine.reset()
-                                        elapsedSeconds = 0
-                                        setupEngine()
-                                        if isSimulating {
-                                            startSimulationForCurrentExercise()
+                                        selectedSport = sp
+                                        let prof = SportTrainingDatabase.profile(for: sp)
+                                        if let firstDrill = prof.recommendedDrills.first {
+                                            selectExercise(firstDrill.exerciseType)
                                         }
                                     }
                                 }) {
-                                    VStack(alignment: .leading, spacing: 2) {
-                                        Text(ex.category.uppercased())
-                                            .font(.system(size: 9, weight: .bold))
-                                            .foregroundColor(isSelected ? TLTheme.brandOrange : TLTheme.textSecondary)
-                                        Text(ex.shortName)
-                                            .font(.system(size: 13, weight: .bold))
-                                            .foregroundColor(TLTheme.textPrimary)
+                                    HStack(spacing: 5) {
+                                        Text(sp.iconEmoji)
+                                        Text(sp.displayName.components(separatedBy: " (").first ?? sp.displayName)
+                                            .font(.system(size: 11, weight: .bold))
                                     }
-                                    .padding(.horizontal, 14)
-                                    .padding(.vertical, 8)
-                                    .background(isSelected ? TLTheme.cardBackground : TLTheme.cardBackground.opacity(0.5))
-                                    .cornerRadius(14)
+                                    .padding(.horizontal, 10)
+                                    .padding(.vertical, 6)
+                                    .background(isSelected ? TLTheme.brandOrange : TLTheme.cardBackground)
+                                    .foregroundColor(isSelected ? .white : TLTheme.textSecondary)
+                                    .cornerRadius(12)
                                     .overlay(
-                                        RoundedRectangle(cornerRadius: 14)
-                                            .stroke(isSelected ? TLTheme.brandOrange : TLTheme.cardBorder, lineWidth: isSelected ? 1.5 : 1)
+                                        RoundedRectangle(cornerRadius: 12)
+                                            .stroke(isSelected ? TLTheme.brandOrange : TLTheme.cardBorder, lineWidth: 1)
                                     )
                                 }
                             }
@@ -102,33 +109,102 @@ public struct WorkoutScreen: View {
                     Button(action: { showProfileSheet = true }) {
                         Image(systemName: "person.crop.circle")
                             .foregroundColor(TLTheme.brandOrange)
-                            .font(.title2)
-                            .frame(width: 44, height: 44)
+                            .font(.title3)
+                            .frame(width: 38, height: 38)
                             .background(TLTheme.cardBackground)
                             .clipShape(Circle())
                     }
                 }
                 .padding(.horizontal)
+                .padding(.top, 4)
                 
-                // Live Camera & Pose Canvas Container
+                // 2. Sport-Specific Gym Drill Selector Bar
+                HStack(spacing: 6) {
+                    ForEach(currentSportProfile.recommendedDrills) { drill in
+                        let isSelected = (drill.exerciseType == selectedExercise)
+                        Button(action: {
+                            if engine.state == .idle {
+                                selectExercise(drill.exerciseType)
+                            }
+                        }) {
+                            VStack(alignment: .leading, spacing: 2) {
+                                Text(drill.exerciseType.shortName)
+                                    .font(.system(size: 12, weight: .bold))
+                                    .foregroundColor(isSelected ? TLTheme.brandOrange : TLTheme.textPrimary)
+                                Text(drill.importanceTier.components(separatedBy: " ").first ?? "")
+                                    .font(.system(size: 8, weight: .semibold))
+                                    .foregroundColor(TLTheme.textSecondary)
+                            }
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                            .padding(.horizontal, 8)
+                            .padding(.vertical, 6)
+                            .background(isSelected ? TLTheme.cardBackground : TLTheme.cardBackground.opacity(0.4))
+                            .cornerRadius(10)
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 10)
+                                    .stroke(isSelected ? TLTheme.brandOrange : TLTheme.cardBorder, lineWidth: isSelected ? 1.5 : 1)
+                            )
+                        }
+                    }
+                }
+                .padding(.horizontal)
+                
+                // 3. Sport Rationale & Target Callout
+                if let drill = currentDrillInfo {
+                    HStack(spacing: 8) {
+                        Image(systemName: "target")
+                            .foregroundColor(TLTheme.cyberCyan)
+                            .font(.system(size: 12))
+                        
+                        VStack(alignment: .leading, spacing: 1) {
+                            Text("\(selectedSport.iconEmoji) \(selectedSport.displayName): \(drill.roleRationale)")
+                                .font(.system(size: 10, weight: .bold))
+                                .foregroundColor(TLTheme.textPrimary)
+                                .lineLimit(1)
+                            
+                            HStack(spacing: 6) {
+                                Text(drill.gymTargetScore)
+                                    .font(.system(size: 9, weight: .black, design: .monospaced))
+                                    .foregroundColor(TLTheme.brandOrange)
+                                Text("• Focus: \(drill.biomechanicalFocus)")
+                                    .font(.system(size: 9))
+                                    .foregroundColor(TLTheme.textSecondary)
+                                    .lineLimit(1)
+                            }
+                        }
+                        Spacer()
+                    }
+                    .padding(.horizontal, 10)
+                    .padding(.vertical, 5)
+                    .background(TLTheme.cyberCyan.opacity(0.1))
+                    .cornerRadius(10)
+                    .overlay(RoundedRectangle(cornerRadius: 10).stroke(TLTheme.cyberCyan.opacity(0.3), lineWidth: 1))
+                    .padding(.horizontal)
+                }
+                
+                // 4. Live Camera & Pose Canvas Container
                 ZStack {
-                    RoundedRectangle(cornerRadius: 24)
+                    RoundedRectangle(cornerRadius: 20)
                         .fill(Color.black)
-                        .overlay(RoundedRectangle(cornerRadius: 24).stroke(TLTheme.cardBorder, lineWidth: 2))
+                        .overlay(RoundedRectangle(cornerRadius: 20).stroke(TLTheme.cardBorder, lineWidth: 1.5))
                     
                     if cameraManager.isCameraAuthorized && !isSimulating {
                         CameraPreviewView(captureSession: cameraManager.captureSession)
-                            .clipShape(RoundedRectangle(cornerRadius: 24))
+                            .clipShape(RoundedRectangle(cornerRadius: 20))
                     } else if isSimulating {
-                        // Simulator placeholder background
                         ZStack {
                             Color.black
-                            Text("🤖 AI Vision Simulation Mode Active")
-                                .font(.system(size: 11, weight: .bold, design: .monospaced))
-                                .foregroundColor(TLTheme.cyberCyan.opacity(0.7))
-                                .offset(y: -90)
+                            VStack(spacing: 4) {
+                                Text("🤖 AI Vision Simulation Mode Active")
+                                    .font(.system(size: 11, weight: .bold, design: .monospaced))
+                                    .foregroundColor(TLTheme.cyberCyan.opacity(0.7))
+                                Text("Sport Battery: \(selectedSport.displayName)")
+                                    .font(.system(size: 10))
+                                    .foregroundColor(TLTheme.textSecondary)
+                            }
+                            .offset(y: -90)
                         }
-                        .clipShape(RoundedRectangle(cornerRadius: 24))
+                        .clipShape(RoundedRectangle(cornerRadius: 20))
                     }
                     
                     // Pose Skeleton Overlay
@@ -138,7 +214,7 @@ public struct WorkoutScreen: View {
                         primaryAngle: engine.currentPrimaryAngle,
                         isTargetDepthReached: engine.depthProgressPercent >= 100
                     )
-                    .clipShape(RoundedRectangle(cornerRadius: 24))
+                    .clipShape(RoundedRectangle(cornerRadius: 20))
                     
                     // Top HUD Controls
                     VStack {
@@ -152,23 +228,23 @@ public struct WorkoutScreen: View {
                                 let mins = elapsedSeconds / 60
                                 let secs = elapsedSeconds % 60
                                 Text(String(format: "%02d:%02d", mins, secs))
-                                    .font(.system(size: 14, weight: .bold, design: .monospaced))
+                                    .font(.system(size: 13, weight: .bold, design: .monospaced))
                                     .foregroundColor(TLTheme.textPrimary)
                             }
                             .padding(.horizontal, 10)
-                            .padding(.vertical, 6)
+                            .padding(.vertical, 5)
                             .background(TLTheme.backgroundDark.opacity(0.85))
-                            .cornerRadius(12)
-                            .overlay(RoundedRectangle(cornerRadius: 12).stroke(TLTheme.cardBorder, lineWidth: 1))
+                            .cornerRadius(10)
+                            .overlay(RoundedRectangle(cornerRadius: 10).stroke(TLTheme.cardBorder, lineWidth: 1))
                             
                             Spacer()
                             
                             // Action controls (Simulate AI, Flip camera, Mute voice coach)
-                            HStack(spacing: 8) {
+                            HStack(spacing: 6) {
                                 Button(action: toggleSimulation) {
                                     Image(systemName: isSimulating ? "cpu.fill" : "cpu")
                                         .foregroundColor(isSimulating ? TLTheme.cyberCyan : TLTheme.textPrimary)
-                                        .frame(width: 36, height: 36)
+                                        .frame(width: 32, height: 32)
                                         .background(isSimulating ? TLTheme.cyberCyan.opacity(0.3) : TLTheme.backgroundDark.opacity(0.8))
                                         .clipShape(Circle())
                                 }
@@ -176,7 +252,7 @@ public struct WorkoutScreen: View {
                                 Button(action: { cameraManager.flipCamera() }) {
                                     Image(systemName: "camera.rotate.fill")
                                         .foregroundColor(TLTheme.textPrimary)
-                                        .frame(width: 36, height: 36)
+                                        .frame(width: 32, height: 32)
                                         .background(TLTheme.backgroundDark.opacity(0.8))
                                         .clipShape(Circle())
                                 }
@@ -184,55 +260,55 @@ public struct WorkoutScreen: View {
                                 Button(action: { voiceCoach.isMuted.toggle() }) {
                                     Image(systemName: voiceCoach.isMuted ? "speaker.slash.fill" : "speaker.wave.2.fill")
                                         .foregroundColor(TLTheme.textPrimary)
-                                        .frame(width: 36, height: 36)
+                                        .frame(width: 32, height: 32)
                                         .background(TLTheme.backgroundDark.opacity(0.8))
                                         .clipShape(Circle())
                                 }
                             }
                         }
-                        .padding(12)
+                        .padding(10)
                         
                         Spacer()
                         
                         // Bottom Big Score Badge
                         HStack(alignment: .bottom, spacing: 6) {
                             Text("\(engine.score)")
-                                .font(.system(size: 48, weight: .black))
+                                .font(.system(size: 42, weight: .black))
                                 .foregroundColor(TLTheme.textPrimary)
                             Text(selectedExercise.metricUnit.uppercased())
-                                .font(.system(size: 14, weight: .bold, design: .monospaced))
+                                .font(.system(size: 13, weight: .bold, design: .monospaced))
                                 .foregroundColor(TLTheme.brandOrange)
-                                .offset(y: -8)
+                                .offset(y: -6)
                         }
-                        .padding(.horizontal, 24)
-                        .padding(.vertical, 8)
+                        .padding(.horizontal, 20)
+                        .padding(.vertical, 6)
                         .background(TLTheme.backgroundDark.opacity(0.9))
-                        .cornerRadius(20)
-                        .overlay(RoundedRectangle(cornerRadius: 20).stroke(TLTheme.cardBorder, lineWidth: 1))
-                        .padding(.bottom, 16)
+                        .cornerRadius(16)
+                        .overlay(RoundedRectangle(cornerRadius: 16).stroke(TLTheme.cardBorder, lineWidth: 1))
+                        .padding(.bottom, 12)
                     }
                 }
                 .padding(.horizontal)
                 
-                // Bottom Action Buttons
+                // 5. Bottom Action Buttons
                 HStack(spacing: 10) {
                     if engine.state == .idle {
                         Button(action: {
                             engine.start()
                             isTimerRunning = true
                             startTimer()
-                            voiceCoach.speak("Assume position to begin \(selectedExercise.shortName)")
+                            voiceCoach.speak("Starting \(selectedSport.displayName) drill: \(selectedExercise.shortName)")
                         }) {
-                            HStack {
+                            HStack(spacing: 8) {
                                 Image(systemName: "play.fill")
-                                Text("Start \(selectedExercise.shortName) Test")
-                                    .font(.system(size: 15, weight: .bold))
+                                Text("Start \(selectedSport.iconEmoji) \(selectedExercise.shortName) Drill")
+                                    .font(.system(size: 14, weight: .bold))
                             }
                             .frame(maxWidth: .infinity)
-                            .frame(height: 54)
+                            .frame(height: 50)
                             .background(TLTheme.brandOrange)
                             .foregroundColor(.white)
-                            .cornerRadius(16)
+                            .cornerRadius(14)
                         }
                     } else {
                         Button(action: {
@@ -245,33 +321,37 @@ public struct WorkoutScreen: View {
                             }
                         }) {
                             Text(engine.state == .paused ? "Resume" : "Pause")
-                                .font(.system(size: 15, weight: .bold))
+                                .font(.system(size: 14, weight: .bold))
                                 .frame(maxWidth: .infinity)
-                                .frame(height: 54)
+                                .frame(height: 50)
                                 .background(TLTheme.cardBackground)
                                 .foregroundColor(TLTheme.textPrimary)
-                                .cornerRadius(16)
+                                .cornerRadius(14)
                         }
                         
                         Button(action: finishWorkoutAction) {
                             HStack {
                                 Image(systemName: "checkmark")
                                 Text("Finish & Verify")
-                                    .font(.system(size: 15, weight: .bold))
+                                    .font(.system(size: 14, weight: .bold))
                             }
                             .frame(maxWidth: .infinity)
-                            .frame(height: 54)
+                            .frame(height: 50)
                             .background(TLTheme.brandOrange)
                             .foregroundColor(.white)
-                            .cornerRadius(16)
+                            .cornerRadius(14)
                         }
                     }
                 }
                 .padding(.horizontal)
-                .padding(.bottom, 12)
+                .padding(.bottom, 8)
             }
         }
         .onAppear {
+            self.selectedSport = athlete.primarySport
+            if let first = SportTrainingDatabase.profile(for: athlete.primarySport).recommendedDrills.first {
+                self.selectedExercise = first.exerciseType
+            }
             setupEngine()
             cameraManager.onLandmarksDetected = { detected in
                 if !isSimulating {
@@ -290,10 +370,21 @@ public struct WorkoutScreen: View {
                 onDismiss: { showProfileSheet = false },
                 onSave: { updated in
                     athlete = updated
+                    selectedSport = updated.primarySport
                     onProfileChange(updated)
                     showProfileSheet = false
                 }
             )
+        }
+    }
+    
+    private func selectExercise(_ ex: ExerciseType) {
+        selectedExercise = ex
+        engine.reset()
+        elapsedSeconds = 0
+        setupEngine()
+        if isSimulating {
+            startSimulationForCurrentExercise()
         }
     }
     
@@ -349,7 +440,7 @@ public struct WorkoutScreen: View {
             gender: athlete.gender,
             state: athlete.state,
             district: athlete.district,
-            sport: athlete.primarySport,
+            sport: selectedSport,
             exerciseType: selectedExercise,
             score: engine.score,
             durationSeconds: max(1, elapsedSeconds),
@@ -360,7 +451,7 @@ public struct WorkoutScreen: View {
         )
         
         AthleteRepository.shared.saveAssessment(result)
-        voiceCoach.speak("Assessment verified! \(calc.talentTier.displayName)", priority: true)
+        voiceCoach.speak("Assessment verified! \(selectedSport.displayName) rating: \(calc.talentTier.displayName)", priority: true)
         onFinishWorkout(result)
     }
 }

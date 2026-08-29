@@ -31,6 +31,21 @@ public enum SportType: String, CaseIterable, Identifiable, Codable {
     
     public var id: String { rawValue }
     public var displayName: String { rawValue }
+    
+    public var iconEmoji: String {
+        switch self {
+        case .athletics: return "🏃"
+        case .football: return "⚽"
+        case .kabaddi: return "🤾"
+        case .wrestling: return "🤼"
+        case .boxing: return "🥊"
+        case .cricket: return "🏏"
+        case .hockey: return "🏑"
+        case .badminton: return "🏸"
+        case .weightlifting: return "🏋️"
+        case .general: return "🏅"
+        }
+    }
 }
 
 public enum ExerciseType: String, CaseIterable, Identifiable, Codable {
@@ -140,6 +155,421 @@ public struct Point2D: Codable, Equatable {
         self.x = x
         self.y = y
         self.visibility = visibility
+    }
+}
+
+public struct SportTrainingDrill: Identifiable, Codable, Equatable {
+    public var id: String { exerciseType.rawValue }
+    public let exerciseType: ExerciseType
+    public let roleRationale: String
+    public let biomechanicalFocus: String
+    public let gymTargetScore: String
+    public let importanceTier: String
+    
+    public init(
+        exerciseType: ExerciseType,
+        roleRationale: String,
+        biomechanicalFocus: String,
+        gymTargetScore: String,
+        importanceTier: String
+    ) {
+        self.exerciseType = exerciseType
+        self.roleRationale = roleRationale
+        self.biomechanicalFocus = biomechanicalFocus
+        self.gymTargetScore = gymTargetScore
+        self.importanceTier = importanceTier
+    }
+}
+
+public struct SportTrainingProfile: Identifiable, Codable, Equatable {
+    public var id: String { sport.rawValue }
+    public let sport: SportType
+    public let tagline: String
+    public let primaryQuality: String
+    public let recommendedDrills: [SportTrainingDrill]
+    public let gymCoachingTip: String
+    
+    public init(
+        sport: SportType,
+        tagline: String,
+        primaryQuality: String,
+        recommendedDrills: [SportTrainingDrill],
+        gymCoachingTip: String
+    ) {
+        self.sport = sport
+        self.tagline = tagline
+        self.primaryQuality = primaryQuality
+        self.recommendedDrills = recommendedDrills
+        self.gymCoachingTip = gymCoachingTip
+    }
+}
+
+public struct SportTrainingDatabase {
+    public static let profiles: [SportType: SportTrainingProfile] = [
+        .cricket: SportTrainingProfile(
+            sport: .cricket,
+            tagline: "Fast Bowling Stride Force, Anti-Rotational Core & Batting Drive",
+            primaryQuality: "Rotational Trunk Stability & Explosive Ground Reaction",
+            recommendedDrills: [
+                SportTrainingDrill(
+                    exerciseType: .verticalJump,
+                    roleRationale: "Explosive run-up plant & jump takeoff velocity for fast bowlers & batting stride extension",
+                    biomechanicalFocus: "Hang-time & maximal vertical elastic rebound",
+                    gymTargetScore: "Target: >55 cm (Elite Fast Bowler)",
+                    importanceTier: "Primary Bowling Power Test"
+                ),
+                SportTrainingDrill(
+                    exerciseType: .plank,
+                    roleRationale: "Anti-rotational core stabilization to protect lumbar spine during high-impact delivery stride",
+                    biomechanicalFocus: "Neutral spine alignment without hip rotation",
+                    gymTargetScore: "Target: >150 sec (Lumbar Protection)",
+                    importanceTier: "Core Injury-Shielding Drill"
+                ),
+                SportTrainingDrill(
+                    exerciseType: .squats,
+                    roleRationale: "Lower-body power drive for wicket-keeping crouch, running between wickets & batting stance",
+                    biomechanicalFocus: "Parallel knee depth with upright chest",
+                    gymTargetScore: "Target: >45 reps / min",
+                    importanceTier: "Leg Endurance & Wicket Stance"
+                ),
+                SportTrainingDrill(
+                    exerciseType: .pushups,
+                    roleRationale: "Pectoral, triceps and shoulder girdle endurance for fast outfield boundary throwing",
+                    biomechanicalFocus: "90° elbow flexion with locked core",
+                    gymTargetScore: "Target: >40 reps",
+                    importanceTier: "Throwing Arm Conditioning"
+                )
+            ],
+            gymCoachingTip: "Fast bowlers experience 8-10x bodyweight on delivery stride. Keep your plank straight to eliminate spine energy leaks."
+        ),
+        .wrestling: SportTrainingProfile(
+            sport: .wrestling,
+            tagline: "Mat Hand-Fighting, Takedown Explosiveness & Core Gut-Wrench Defense",
+            primaryQuality: "Isometric Core Bracing & Explosive Leg Attack Drive",
+            recommendedDrills: [
+                SportTrainingDrill(
+                    exerciseType: .plank,
+                    roleRationale: "Ironclad isometric core bracing to defend against gut-wrench rolls & maintain mat parterre posture",
+                    biomechanicalFocus: "Maximal abdominal tension & straight hip line",
+                    gymTargetScore: "Target: >180 sec (National Akhada Standard)",
+                    importanceTier: "Mat Defense & Bridge Anchor"
+                ),
+                SportTrainingDrill(
+                    exerciseType: .squats,
+                    roleRationale: "Deep hip flexion power for low-level single/double-leg attack shots & sprawl recoveries",
+                    biomechanicalFocus: "Deep sub-90° knee angle with explosive hip extension",
+                    gymTargetScore: "Target: >55 reps",
+                    importanceTier: "Takedown Shot Engine"
+                ),
+                SportTrainingDrill(
+                    exerciseType: .pushups,
+                    roleRationale: "Upper body explosive pushing power for hand-fighting, collar ties & snapping down opponents",
+                    biomechanicalFocus: "Strict arm lockout to simulate underhook breaks",
+                    gymTargetScore: "Target: >50 reps",
+                    importanceTier: "Hand-Fighting & Chest Power"
+                ),
+                SportTrainingDrill(
+                    exerciseType: .verticalJump,
+                    roleRationale: "Instantaneous rate of force development for explosive re-attacks and mat lifting power",
+                    biomechanicalFocus: "Maximum takeoff acceleration",
+                    gymTargetScore: "Target: >58 cm",
+                    importanceTier: "Explosive Lift Power"
+                )
+            ],
+            gymCoachingTip: "Focus on crisp arm lockout during push-ups to simulate breaking opponents' underhooks on the mat."
+        ),
+        .football: SportTrainingProfile(
+            sport: .football,
+            tagline: "Sprint Acceleration, Aerial Header Duels & 90-Min Physical Resilience",
+            primaryQuality: "Explosive Aerial Hang-Time & Lower-Body Deceleration",
+            recommendedDrills: [
+                SportTrainingDrill(
+                    exerciseType: .verticalJump,
+                    roleRationale: "Crucial for aerial header duels, set pieces & explosive first-step sprint acceleration",
+                    biomechanicalFocus: "Triple-extension takeoff and hang-time",
+                    gymTargetScore: "Target: >60 cm (Wing/Forward Standard)",
+                    importanceTier: "Aerial Combat & Sprint Speed"
+                ),
+                SportTrainingDrill(
+                    exerciseType: .squats,
+                    roleRationale: "Builds hamstring/quadriceps strength for rapid deceleration, cutting & shot power",
+                    biomechanicalFocus: "Controlled eccentric descent with explosive upward drive",
+                    gymTargetScore: "Target: >50 reps",
+                    importanceTier: "Cutting & Knee Stability"
+                ),
+                SportTrainingDrill(
+                    exerciseType: .plank,
+                    roleRationale: "Shielding torso stability during shoulder-to-shoulder physical challenges on the pitch",
+                    biomechanicalFocus: "Rock-solid core under fatigue",
+                    gymTargetScore: "Target: >140 sec",
+                    importanceTier: "Physical Shielding Strength"
+                ),
+                SportTrainingDrill(
+                    exerciseType: .pushups,
+                    roleRationale: "Upper body balance and arm pump propulsion during high-speed breakaways",
+                    biomechanicalFocus: "90° elbow depth with steady rhythm",
+                    gymTargetScore: "Target: >35 reps",
+                    importanceTier: "Sprint Arm Pump Drive"
+                )
+            ],
+            gymCoachingTip: "Maximize knee flexion in squats to strengthen knee stabilizing ligaments (ACL/MCL) against sudden turf cuts."
+        ),
+        .kabaddi: SportTrainingProfile(
+            sport: .kabaddi,
+            tagline: "Raider Toe-Touch Spring, Corner Ankle Holds & Multi-Defender Resistance",
+            primaryQuality: "Explosive Lateral Spring & Kinetic Chain Defense",
+            recommendedDrills: [
+                SportTrainingDrill(
+                    exerciseType: .squats,
+                    roleRationale: "Rapid level change for defender tackle dives and raider sudden bonus-line lunges",
+                    biomechanicalFocus: "Deep knee bend and instant rebound",
+                    gymTargetScore: "Target: >55 reps",
+                    importanceTier: "Bonus Line Lunge Engine"
+                ),
+                SportTrainingDrill(
+                    exerciseType: .verticalJump,
+                    roleRationale: "Explosive leaping over defender chain tackles (frog jump / lion jump evasions)",
+                    biomechanicalFocus: "Max vertical apex height",
+                    gymTargetScore: "Target: >62 cm (Pro Kabaddi Raider Standard)",
+                    importanceTier: "Chain Evasion Leaping"
+                ),
+                SportTrainingDrill(
+                    exerciseType: .plank,
+                    roleRationale: "Maintaining cantilever core tension when resisting multi-defender chain tackle pulls",
+                    biomechanicalFocus: "Anti-piking rigid spine alignment",
+                    gymTargetScore: "Target: >160 sec",
+                    importanceTier: "Midline Drag Resistance"
+                ),
+                SportTrainingDrill(
+                    exerciseType: .pushups,
+                    roleRationale: "Upper body hand thrust for hand touches and defender pushing duels",
+                    biomechanicalFocus: "Explosive chest push-off",
+                    gymTargetScore: "Target: >45 reps",
+                    importanceTier: "Raider Hand-Touch Power"
+                )
+            ],
+            gymCoachingTip: "Train full-depth squats to ensure rapid hip rebound when executing sudden escapes back across the midline."
+        ),
+        .badminton: SportTrainingProfile(
+            sport: .badminton,
+            tagline: "Jump Smash Apex Power, Court Lunge Recovery & Rotational Stability",
+            primaryQuality: "Peak Vertical Hang-Time & Rapid Footwork Recovery",
+            recommendedDrills: [
+                SportTrainingDrill(
+                    exerciseType: .verticalJump,
+                    roleRationale: "Dominating the rear-court with steep jump smashes and high contact point apex reach",
+                    biomechanicalFocus: "Flight hang-time for kinetic wind-up",
+                    gymTargetScore: "Target: >62 cm (Top 5% National Shuttler)",
+                    importanceTier: "Rear-Court Jump Smash"
+                ),
+                SportTrainingDrill(
+                    exerciseType: .squats,
+                    roleRationale: "Extreme single-leg deceleration in front-court lunges and rapid base recovery",
+                    biomechanicalFocus: "Deep hip mobility and ankle dorsiflexion",
+                    gymTargetScore: "Target: >48 reps",
+                    importanceTier: "Front-Court Lunge Recovery"
+                ),
+                SportTrainingDrill(
+                    exerciseType: .plank,
+                    roleRationale: "Core anti-rotation to stabilize torso during high-velocity overhead slice/smash rotations",
+                    biomechanicalFocus: "Solid torso bracing without spine twisting",
+                    gymTargetScore: "Target: >130 sec",
+                    importanceTier: "Overhead Smash Stability"
+                ),
+                SportTrainingDrill(
+                    exerciseType: .pushups,
+                    roleRationale: "Shoulder girdle stability to prevent rotator cuff overuse injuries during match play",
+                    biomechanicalFocus: "Controlled tempo with full range",
+                    gymTargetScore: "Target: >35 reps",
+                    importanceTier: "Rotator Cuff Injury Shield"
+                )
+            ],
+            gymCoachingTip: "Aim for maximum hang-time in vertical jumps to give your racket kinetic chain full wind-up time at the apex."
+        ),
+        .boxing: SportTrainingProfile(
+            sport: .boxing,
+            tagline: "Kinetic Chain Punch Drive, Torso Shielding & 12-Round Shoulder Stamina",
+            primaryQuality: "Upper Body Muscular Endurance & Trunk Shock Absorption",
+            recommendedDrills: [
+                SportTrainingDrill(
+                    exerciseType: .pushups,
+                    roleRationale: "High-cadence punch extension speed and shoulder endurance for continuous combinations",
+                    biomechanicalFocus: "Rapid cadence (>45 RPM) with full lockout",
+                    gymTargetScore: "Target: >55 reps / min",
+                    importanceTier: "Combination Punch Speed"
+                ),
+                SportTrainingDrill(
+                    exerciseType: .squats,
+                    roleRationale: "Leg drive generating 60%+ of knockout power kinetic chain from canvas to fist",
+                    biomechanicalFocus: "Explosive upward leg drive",
+                    gymTargetScore: "Target: >50 reps",
+                    importanceTier: "Kinetic Punch Power Drive"
+                ),
+                SportTrainingDrill(
+                    exerciseType: .plank,
+                    roleRationale: "Absorbing heavy body shots and maintaining tight guard under championship fatigue",
+                    biomechanicalFocus: "Tight abdominal brace throughout",
+                    gymTargetScore: "Target: >170 sec",
+                    importanceTier: "Body Punch Shock Absorber"
+                ),
+                SportTrainingDrill(
+                    exerciseType: .verticalJump,
+                    roleRationale: "Spring-loaded footwork for in-and-out slipping, pivots & rapid angle changes",
+                    biomechanicalFocus: "Elastic ankle and calf spring",
+                    gymTargetScore: "Target: >54 cm",
+                    importanceTier: "Ring Footwork Spring"
+                )
+            ],
+            gymCoachingTip: "Maintain high cadence (45+ RPM) in push-ups to build the fast-twitch endurance needed in championship rounds."
+        ),
+        .athletics: SportTrainingProfile(
+            sport: .athletics,
+            tagline: "Ground Reaction Force, Triple-Extension & Stride Frequency",
+            primaryQuality: "Rate of Force Development & Explosive Elasticity",
+            recommendedDrills: [
+                SportTrainingDrill(
+                    exerciseType: .verticalJump,
+                    roleRationale: "Direct indicator of ground reaction force (F = m·a) and sprint takeoff velocity",
+                    biomechanicalFocus: "Explosive triple extension (hip-knee-ankle)",
+                    gymTargetScore: "Target: >65 cm (Elite Sprinter/Jumper)",
+                    importanceTier: "Ground Reaction Velocity"
+                ),
+                SportTrainingDrill(
+                    exerciseType: .squats,
+                    roleRationale: "Maximum hip and knee extension power for sprint starting blocks & drive phase",
+                    biomechanicalFocus: "Parallel depth with maximal ascent velocity",
+                    gymTargetScore: "Target: >55 reps",
+                    importanceTier: "Drive Phase Acceleration"
+                ),
+                SportTrainingDrill(
+                    exerciseType: .plank,
+                    roleRationale: "Eliminating torso energy leaks during maximum velocity upright sprinting",
+                    biomechanicalFocus: "Rigid neutral torso alignment",
+                    gymTargetScore: "Target: >160 sec",
+                    importanceTier: "Sprint Posture Integrity"
+                ),
+                SportTrainingDrill(
+                    exerciseType: .pushups,
+                    roleRationale: "Arm drive momentum and upper-body counter-rotational balance during strides",
+                    biomechanicalFocus: "Symmetric arm lockout",
+                    gymTargetScore: "Target: >45 reps",
+                    importanceTier: "Arm Drive Counterbalance"
+                )
+            ],
+            gymCoachingTip: "Vertical jump hang-time directly correlates with sub-11s 100m sprint stride length and frequency."
+        ),
+        .weightlifting: SportTrainingProfile(
+            sport: .weightlifting,
+            tagline: "Olympic Squat Depth, Triple Extension & Rigid Spinal Lockout",
+            primaryQuality: "Deep Hip Mobility & Maximum Isometric Core Bracing",
+            recommendedDrills: [
+                SportTrainingDrill(
+                    exerciseType: .squats,
+                    roleRationale: "Ass-to-grass (ATG) sub-80° knee flexion mobility for snatch and clean catch positions",
+                    biomechanicalFocus: "Full deep knee flexion with vertical spine",
+                    gymTargetScore: "Target: >60 reps (Perfect Deep Form)",
+                    importanceTier: "Olympic Clean Catch Foundation"
+                ),
+                SportTrainingDrill(
+                    exerciseType: .plank,
+                    roleRationale: "Bracing intra-abdominal pressure and neutral spine alignment under heavy overhead loads",
+                    biomechanicalFocus: "Zero spinal flexion/extension variance",
+                    gymTargetScore: "Target: >200 sec (Spine Shield)",
+                    importanceTier: "Intra-Abdominal Pressure Brace"
+                ),
+                SportTrainingDrill(
+                    exerciseType: .verticalJump,
+                    roleRationale: "Peak triple-extension (hip-knee-ankle) power during second pull of the snatch/clean",
+                    biomechanicalFocus: "Explosive takeoff acceleration",
+                    gymTargetScore: "Target: >60 cm",
+                    importanceTier: "Second-Pull Power Metric"
+                ),
+                SportTrainingDrill(
+                    exerciseType: .pushups,
+                    roleRationale: "Upper body overhead pressing foundation and elbow lockout integrity",
+                    biomechanicalFocus: "Complete 180° arm lockout",
+                    gymTargetScore: "Target: >45 reps",
+                    importanceTier: "Overhead Lockout Integrity"
+                )
+            ],
+            gymCoachingTip: "Descend below parallel on squats with vertical chest alignment to master the Olympic catch."
+        ),
+        .hockey: SportTrainingProfile(
+            sport: .hockey,
+            tagline: "Low-Crouch Drag-Flick Power, Acceleration & Lateral Core Force",
+            primaryQuality: "Sustained Low-Stance Endurance & Rotational Power",
+            recommendedDrills: [
+                SportTrainingDrill(
+                    exerciseType: .squats,
+                    roleRationale: "Maintaining prolonged semi-crouched dribbling and drag-flick posture without fatigue",
+                    biomechanicalFocus: "Sustained quad & hip endurance",
+                    gymTargetScore: "Target: >50 reps",
+                    importanceTier: "Low-Stance Stick Play"
+                ),
+                SportTrainingDrill(
+                    exerciseType: .plank,
+                    roleRationale: "Transferring rotational torque from torso into high-speed drag flick shots",
+                    biomechanicalFocus: "Spine stabilization during torque",
+                    gymTargetScore: "Target: >140 sec",
+                    importanceTier: "Drag-Flick Torque Transfer"
+                ),
+                SportTrainingDrill(
+                    exerciseType: .verticalJump,
+                    roleRationale: "Explosive counter-attack sprint acceleration from dead stops on turf",
+                    biomechanicalFocus: "Quick ground push-off",
+                    gymTargetScore: "Target: >56 cm",
+                    importanceTier: "Turf Breakaway Acceleration"
+                ),
+                SportTrainingDrill(
+                    exerciseType: .pushups,
+                    roleRationale: "Forearm, wrist and tricep control for aerial passing and stick handling",
+                    biomechanicalFocus: "Consistent 90° depth",
+                    gymTargetScore: "Target: >38 reps",
+                    importanceTier: "Stick Control & Push Passing"
+                )
+            ],
+            gymCoachingTip: "Squat endurance prevents lower back fatigue during continuous low-center-of-gravity stick play."
+        ),
+        .general: SportTrainingProfile(
+            sport: .general,
+            tagline: "All-Round Olympic Tri-Power, Joint Integrity & Kinetic Balance",
+            primaryQuality: "Full-Spectrum Biomechanical Balance",
+            recommendedDrills: [
+                SportTrainingDrill(
+                    exerciseType: .pushups,
+                    roleRationale: "Upper body push strength & endurance",
+                    biomechanicalFocus: "90° elbow depth, straight spine",
+                    gymTargetScore: "Target: >40 reps",
+                    importanceTier: "Upper Body Base"
+                ),
+                SportTrainingDrill(
+                    exerciseType: .squats,
+                    roleRationale: "Lower body functional mobility & leg power",
+                    biomechanicalFocus: "Parallel knee depth (>90°)",
+                    gymTargetScore: "Target: >45 reps",
+                    importanceTier: "Lower Body Base"
+                ),
+                SportTrainingDrill(
+                    exerciseType: .plank,
+                    roleRationale: "Core spine stabilization & endurance",
+                    biomechanicalFocus: "Neutral spine alignment",
+                    gymTargetScore: "Target: >120 sec",
+                    importanceTier: "Core Posture Anchor"
+                ),
+                SportTrainingDrill(
+                    exerciseType: .verticalJump,
+                    roleRationale: "Explosive lower body force & hang-time",
+                    biomechanicalFocus: "Countermovement takeoff",
+                    gymTargetScore: "Target: >50 cm",
+                    importanceTier: "Explosive Power Metric"
+                )
+            ],
+            gymCoachingTip: "A balanced athletic foundation is the cornerstone of lifelong injury prevention and elite sports transition."
+        )
+    ]
+    
+    public static func profile(for sport: SportType) -> SportTrainingProfile {
+        return profiles[sport] ?? profiles[.general]!
     }
 }
 
