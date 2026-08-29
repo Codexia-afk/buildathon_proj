@@ -7,28 +7,35 @@
 An Olympic-grade computer vision platform that turns any smartphone into an AI-powered physical fitness testing lab. Real-time pose estimation validates athletic form, calculates national age/gender percentiles, and broadcasts verified talent credentials live to scout and coach dashboards.
 
 [![React](https://img.shields.io/badge/Web_PWA-React_18_%2B_Vite-61DAFB?logo=react&logoColor=black)](https://reactjs.org/)
+[![iOS](https://img.shields.io/badge/Native_iOS-SwiftUI_%2B_Xcode-007AFF?logo=apple&logoColor=white)](https://developer.apple.com/xcode/)
 [![Kotlin](https://img.shields.io/badge/Native_Android-Kotlin_%2B_Jetpack_Compose-7F52FF?logo=kotlin&logoColor=white)](https://kotlinlang.org/)
+[![Apple Vision](https://img.shields.io/badge/Apple_Vision-HumanBodyPose-FF2D55?logo=apple&logoColor=white)](https://developer.apple.com/documentation/vision)
 [![MediaPipe](https://img.shields.io/badge/MediaPipe-Tasks_Vision_0.10-007FFF?logo=google&logoColor=white)](https://developers.google.com/mediapipe)
 [![CameraX](https://img.shields.io/badge/CameraX-1.3.4-34A853?logo=android&logoColor=white)](https://developer.android.com/training/camerax)
 [![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-3.4-38B2AC?logo=tailwind-css&logoColor=white)](https://tailwindcss.com/)
 [![Firebase](https://img.shields.io/badge/Firebase-Firestore-FFCA28?logo=firebase&logoColor=black)](https://firebase.google.com/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 
-[**Live Web App**](http://localhost:5173) • [**Native Android (Kotlin)**](#-native-android-app-kotlin--jetpack-compose) • [**Architecture**](#-architecture--how-it-works) • [**Biomechanical Engine**](#-biomechanical--ai-engine) • [**Scout Command Center**](#-scout--coach-command-center)
+[**Live Web App**](http://localhost:5173) • [**Native iOS (Xcode/SwiftUI)**](#-native-ios-app-swiftui--xcode) • [**Native Android (Kotlin)**](#-native-android-app-kotlin--jetpack-compose) • [**Architecture**](#-architecture--how-it-works) • [**Biomechanical Engine**](#-biomechanical--ai-engine) • [**Scout Command Center**](#-scout--coach-command-center)
 
 ---
 
 </div>
 
-## 📌 Dual Architecture: Web PWA & Native Android (Kotlin)
+## 📌 Tri-Platform Architecture: iOS (Xcode), Android & Web PWA
 
-TalentLens is delivered in **two high-performance implementations**:
+TalentLens is delivered across **three high-performance implementations**:
 
-1. **📱 Native Android App (`android/`)**:
+1. **🍎 Native iOS App (`ios/`)**:
+   - Written in **100% Swift & SwiftUI** for iOS 16+.
+   - Integrates **Apple Vision Framework (`VNDetectHumanBodyPoseRequest`)** and **AVFoundation** for 30+ FPS edge AI inference on the Apple Neural Engine.
+   - Built-in **AVSpeechSynthesizer** AI Voice Coach, audio haptics, digital certificate generation & native iOS ShareLink.
+   - Ready to open directly in **Xcode** (`ios/TalentLens.xcodeproj`).
+2. **📱 Native Android App (`android/`)**:
    - Written in **100% Kotlin** with **Jetpack Compose & Material 3**.
    - Integrates **CameraX** for GPU-accelerated frame streaming and **Google MediaPipe Tasks Vision Android SDK** for 30+ FPS edge AI inference.
    - Built-in **TextToSpeech (TTS)** AI Voice Coach and **ToneGenerator** audio synthesizer.
-2. **🌐 Progressive Web App (Root `src/`)**:
+3. **🌐 Progressive Web App (Root `src/`)**:
    - Built with **React 18 + TypeScript + Vite + Tailwind CSS**.
    - Zero-installation instant access in any mobile browser (Chrome/Safari) with **PWA "Add to Home Screen"** and Web Audio/Speech synthesis.
 
@@ -77,6 +84,60 @@ TalentLens is delivered in **two high-performance implementations**:
  │   • Scout Review Desk: Athlete Dossier Inspection, Coach Notes, Shortlist & CSV Export│
  └───────────────────────────────────────────────────────────────────────────────────────┘
 ```
+
+---
+
+## 🍎 Native iOS App (SwiftUI + Xcode)
+
+The complete native iOS mobile application source code and Xcode project are located in the [`ios/`](file:///Users/srinjoypramanick/MIro/ios) directory:
+
+### iOS Project Structure:
+```
+ios/
+├── TalentLens.xcodeproj/          # Open directly in Xcode (iOS 16+)
+│   └── project.pbxproj           # Project build settings & file references
+└── TalentLens/
+    ├── Info.plist                # NSCameraUsageDescription & permissions
+    ├── TalentLensApp.swift       # App lifecycle entry point (@main)
+    ├── ContentView.swift         # Root Tab Navigation (Home, Workout, Scout, Standards)
+    ├── Model/
+    │   └── DataModels.swift      # Swift Enums & Data Models (AthleteProfile, AssessmentResult, etc.)
+    ├── Engine/
+    │   ├── GeometryUtils.swift        # Joint angle trigonometry & jump height physics
+    │   ├── ExerciseStateEngine.swift  # Deterministic FSM state machine
+    │   └── PercentileEngine.swift     # Indian national percentile interpolation
+    ├── Data/
+    │   └── AthleteRepository.swift    # Reactive repository, 5 seed athletes, CSV export
+    ├── Audio/
+    │   └── VoiceCoachService.swift    # AVSpeechSynthesizer AI Voice Coach & sound cues
+    ├── ML/
+    │   ├── CameraManager.swift        # AVFoundation live camera frame stream
+    │   └── PoseDetectorHelper.swift   # Apple Vision VNDetectHumanBodyPoseRequest & AI Simulator
+    └── UI/
+        ├── Theme/
+        │   └── Colors.swift           # Sports-tech dark palette
+        ├── Components/
+        │   ├── PoseSkeletonOverlayView.swift   # Real-time SwiftUI Canvas skeleton & HUD
+        │   ├── CertificateModalView.swift      # Official credential certificate & ShareLink
+        │   ├── AthleteDetailModalView.swift    # Athlete dossier, biomechanics & scout notes
+        │   ├── AthleteComparisonModalView.swift # Head-to-head comparison matrix
+        │   └── ProfileSetupModalView.swift     # Athlete profile editor (16 Indian states)
+        └── Screens/
+            ├── HomeScreen.swift       # Dual-entry landing screen
+            ├── WorkoutScreen.swift    # Live Camera + Vision Pose HUD + AI Simulation
+            ├── ResultScreen.swift     # Verified result & national %ile
+            ├── ScoutFeedScreen.swift  # Real-time discovery feed
+            └── BenchmarksScreen.swift # Interactive standards calculator
+```
+
+### Running the iOS App in Xcode:
+1. Open the project in **Xcode**:
+   ```bash
+   open ios/TalentLens.xcodeproj
+   ```
+2. Select your run destination (e.g. **iPhone 17**, **iPhone 16 Pro**, or any connected physical iOS device).
+3. Press **Run (`Cmd + R`)** to build and launch.
+4. *Tip*: If running in the **iOS Simulator** (which has no physical camera), tap the **`CPU` (AI Simulation)** button in the Workout screen to simulate realistic athletic movement in real-time!
 
 ---
 

@@ -1,0 +1,481 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 56;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		1A0201000000000000000001 /* TalentLensApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A0101000000000000000001 /* TalentLensApp.swift */; };
+		1A0202000000000000000002 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A0102000000000000000002 /* ContentView.swift */; };
+		1A0204000000000000000004 /* DataModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A0104000000000000000004 /* DataModels.swift */; };
+		1A0205000000000000000005 /* GeometryUtils.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A0105000000000000000005 /* GeometryUtils.swift */; };
+		1A0206000000000000000006 /* ExerciseStateEngine.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A0106000000000000000006 /* ExerciseStateEngine.swift */; };
+		1A0207000000000000000007 /* PercentileEngine.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A0107000000000000000007 /* PercentileEngine.swift */; };
+		1A0208000000000000000008 /* AthleteRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A0108000000000000000008 /* AthleteRepository.swift */; };
+		1A0209000000000000000009 /* VoiceCoachService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A0109000000000000000009 /* VoiceCoachService.swift */; };
+		1A020A00000000000000000A /* CameraManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A010A00000000000000000A /* CameraManager.swift */; };
+		1A020B00000000000000000B /* PoseDetectorHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A010B00000000000000000B /* PoseDetectorHelper.swift */; };
+		1A020C00000000000000000C /* Colors.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A010C00000000000000000C /* Colors.swift */; };
+		1A020D00000000000000000D /* PoseSkeletonOverlayView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A010D00000000000000000D /* PoseSkeletonOverlayView.swift */; };
+		1A020E00000000000000000E /* CertificateModalView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A010E00000000000000000E /* CertificateModalView.swift */; };
+		1A020F00000000000000000F /* AthleteDetailModalView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A010F00000000000000000F /* AthleteDetailModalView.swift */; };
+		1A0210000000000000000010 /* AthleteComparisonModalView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A0110000000000000000010 /* AthleteComparisonModalView.swift */; };
+		1A0211000000000000000011 /* ProfileSetupModalView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A0111000000000000000011 /* ProfileSetupModalView.swift */; };
+		1A0212000000000000000012 /* HomeScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A0112000000000000000012 /* HomeScreen.swift */; };
+		1A0213000000000000000013 /* WorkoutScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A0113000000000000000013 /* WorkoutScreen.swift */; };
+		1A0214000000000000000014 /* ResultScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A0114000000000000000014 /* ResultScreen.swift */; };
+		1A0215000000000000000015 /* ScoutFeedScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A0115000000000000000015 /* ScoutFeedScreen.swift */; };
+		1A0216000000000000000016 /* BenchmarksScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A0116000000000000000016 /* BenchmarksScreen.swift */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		1A00000F2C1234560000000F /* TalentLens.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = TalentLens.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		1A0101000000000000000001 /* TalentLensApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TalentLensApp.swift; sourceTree = "<group>"; };
+		1A0102000000000000000002 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
+		1A0103000000000000000003 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		1A0104000000000000000004 /* DataModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DataModels.swift; sourceTree = "<group>"; };
+		1A0105000000000000000005 /* GeometryUtils.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GeometryUtils.swift; sourceTree = "<group>"; };
+		1A0106000000000000000006 /* ExerciseStateEngine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExerciseStateEngine.swift; sourceTree = "<group>"; };
+		1A0107000000000000000007 /* PercentileEngine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PercentileEngine.swift; sourceTree = "<group>"; };
+		1A0108000000000000000008 /* AthleteRepository.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AthleteRepository.swift; sourceTree = "<group>"; };
+		1A0109000000000000000009 /* VoiceCoachService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VoiceCoachService.swift; sourceTree = "<group>"; };
+		1A010A00000000000000000A /* CameraManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CameraManager.swift; sourceTree = "<group>"; };
+		1A010B00000000000000000B /* PoseDetectorHelper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PoseDetectorHelper.swift; sourceTree = "<group>"; };
+		1A010C00000000000000000C /* Colors.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Colors.swift; sourceTree = "<group>"; };
+		1A010D00000000000000000D /* PoseSkeletonOverlayView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PoseSkeletonOverlayView.swift; sourceTree = "<group>"; };
+		1A010E00000000000000000E /* CertificateModalView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CertificateModalView.swift; sourceTree = "<group>"; };
+		1A010F00000000000000000F /* AthleteDetailModalView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AthleteDetailModalView.swift; sourceTree = "<group>"; };
+		1A0110000000000000000010 /* AthleteComparisonModalView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AthleteComparisonModalView.swift; sourceTree = "<group>"; };
+		1A0111000000000000000011 /* ProfileSetupModalView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfileSetupModalView.swift; sourceTree = "<group>"; };
+		1A0112000000000000000012 /* HomeScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeScreen.swift; sourceTree = "<group>"; };
+		1A0113000000000000000013 /* WorkoutScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkoutScreen.swift; sourceTree = "<group>"; };
+		1A0114000000000000000014 /* ResultScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ResultScreen.swift; sourceTree = "<group>"; };
+		1A0115000000000000000015 /* ScoutFeedScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScoutFeedScreen.swift; sourceTree = "<group>"; };
+		1A0116000000000000000016 /* BenchmarksScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BenchmarksScreen.swift; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		1A00000A2C1234560000000A /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		1A00000C2C1234560000000C = {
+			isa = PBXGroup;
+			children = (
+				1A00000D2C1234560000000D /* TalentLens */,
+				1A00000E2C1234560000000E /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		1A00000D2C1234560000000D /* TalentLens */ = {
+			isa = PBXGroup;
+			children = (
+				1A0101000000000000000001 /* TalentLensApp.swift */,
+				1A0102000000000000000002 /* ContentView.swift */,
+				1A0103000000000000000003 /* Info.plist */,
+				1A0000102C12345600000010 /* Model */,
+				1A0000112C12345600000011 /* Engine */,
+				1A0000122C12345600000012 /* Data */,
+				1A0000132C12345600000013 /* Audio */,
+				1A0000142C12345600000014 /* ML */,
+				1A0000152C12345600000015 /* UI */,
+			);
+			path = TalentLens;
+			sourceTree = "<group>";
+		};
+		1A00000E2C1234560000000E /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				1A00000F2C1234560000000F /* TalentLens.app */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		1A0000102C12345600000010 /* Model */ = {
+			isa = PBXGroup;
+			children = (
+				1A0104000000000000000004 /* DataModels.swift */,
+			);
+			path = Model;
+			sourceTree = "<group>";
+		};
+		1A0000112C12345600000011 /* Engine */ = {
+			isa = PBXGroup;
+			children = (
+				1A0105000000000000000005 /* GeometryUtils.swift */,
+				1A0106000000000000000006 /* ExerciseStateEngine.swift */,
+				1A0107000000000000000007 /* PercentileEngine.swift */,
+			);
+			path = Engine;
+			sourceTree = "<group>";
+		};
+		1A0000122C12345600000012 /* Data */ = {
+			isa = PBXGroup;
+			children = (
+				1A0108000000000000000008 /* AthleteRepository.swift */,
+			);
+			path = Data;
+			sourceTree = "<group>";
+		};
+		1A0000132C12345600000013 /* Audio */ = {
+			isa = PBXGroup;
+			children = (
+				1A0109000000000000000009 /* VoiceCoachService.swift */,
+			);
+			path = Audio;
+			sourceTree = "<group>";
+		};
+		1A0000142C12345600000014 /* ML */ = {
+			isa = PBXGroup;
+			children = (
+				1A010A00000000000000000A /* CameraManager.swift */,
+				1A010B00000000000000000B /* PoseDetectorHelper.swift */,
+			);
+			path = ML;
+			sourceTree = "<group>";
+		};
+		1A0000152C12345600000015 /* UI */ = {
+			isa = PBXGroup;
+			children = (
+				1A0000162C12345600000016 /* Theme */,
+				1A0000172C12345600000017 /* Components */,
+				1A0000182C12345600000018 /* Screens */,
+			);
+			path = UI;
+			sourceTree = "<group>";
+		};
+		1A0000162C12345600000016 /* Theme */ = {
+			isa = PBXGroup;
+			children = (
+				1A010C00000000000000000C /* Colors.swift */,
+			);
+			path = Theme;
+			sourceTree = "<group>";
+		};
+		1A0000172C12345600000017 /* Components */ = {
+			isa = PBXGroup;
+			children = (
+				1A010D00000000000000000D /* PoseSkeletonOverlayView.swift */,
+				1A010E00000000000000000E /* CertificateModalView.swift */,
+				1A010F00000000000000000F /* AthleteDetailModalView.swift */,
+				1A0110000000000000000010 /* AthleteComparisonModalView.swift */,
+				1A0111000000000000000011 /* ProfileSetupModalView.swift */,
+			);
+			path = Components;
+			sourceTree = "<group>";
+		};
+		1A0000182C12345600000018 /* Screens */ = {
+			isa = PBXGroup;
+			children = (
+				1A0112000000000000000012 /* HomeScreen.swift */,
+				1A0113000000000000000013 /* WorkoutScreen.swift */,
+				1A0114000000000000000014 /* ResultScreen.swift */,
+				1A0115000000000000000015 /* ScoutFeedScreen.swift */,
+				1A0116000000000000000016 /* BenchmarksScreen.swift */,
+			);
+			path = Screens;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		1A0000022C12345600000002 /* TalentLens */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 1A0000042C12345600000004 /* Build configuration list for PBXNativeTarget "TalentLens" */;
+			buildPhases = (
+				1A0000092C12345600000009 /* Sources */,
+				1A00000A2C1234560000000A /* Frameworks */,
+				1A00000B2C1234560000000B /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = TalentLens;
+			productName = TalentLens;
+			productReference = 1A00000F2C1234560000000F /* TalentLens.app */;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		1A0000012C12345600000001 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = 1;
+				LastSwiftUpdateCheck = 1500;
+				LastUpgradeCheck = 1500;
+				TargetAttributes = {
+					1A0000022C12345600000002 = {
+						CreatedOnToolsVersion = 15.0;
+					};
+				};
+			};
+			buildConfigurationList = 1A0000032C12345600000003 /* Build configuration list for PBXProject "TalentLens" */;
+			compatibilityVersion = "Xcode 14.0";
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+			);
+			mainGroup = 1A00000C2C1234560000000C;
+			productRefGroup = 1A00000E2C1234560000000E /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				1A0000022C12345600000002 /* TalentLens */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		1A00000B2C1234560000000B /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		1A0000092C12345600000009 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				1A0201000000000000000001 /* TalentLensApp.swift in Sources */,
+				1A0202000000000000000002 /* ContentView.swift in Sources */,
+				1A0204000000000000000004 /* DataModels.swift in Sources */,
+				1A0205000000000000000005 /* GeometryUtils.swift in Sources */,
+				1A0206000000000000000006 /* ExerciseStateEngine.swift in Sources */,
+				1A0207000000000000000007 /* PercentileEngine.swift in Sources */,
+				1A0208000000000000000008 /* AthleteRepository.swift in Sources */,
+				1A0209000000000000000009 /* VoiceCoachService.swift in Sources */,
+				1A020A00000000000000000A /* CameraManager.swift in Sources */,
+				1A020B00000000000000000B /* PoseDetectorHelper.swift in Sources */,
+				1A020C00000000000000000C /* Colors.swift in Sources */,
+				1A020D00000000000000000D /* PoseSkeletonOverlayView.swift in Sources */,
+				1A020E00000000000000000E /* CertificateModalView.swift in Sources */,
+				1A020F00000000000000000F /* AthleteDetailModalView.swift in Sources */,
+				1A0210000000000000000010 /* AthleteComparisonModalView.swift in Sources */,
+				1A0211000000000000000011 /* ProfileSetupModalView.swift in Sources */,
+				1A0212000000000000000012 /* HomeScreen.swift in Sources */,
+				1A0213000000000000000013 /* WorkoutScreen.swift in Sources */,
+				1A0214000000000000000014 /* ResultScreen.swift in Sources */,
+				1A0215000000000000000015 /* ScoutFeedScreen.swift in Sources */,
+				1A0216000000000000000016 /* BenchmarksScreen.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		1A0000052C12345600000005 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = NO;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDEFINED_VARIABLES = YES;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = iphoneos;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+			};
+			name = Debug;
+		};
+		1A0000062C12345600000006 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = NO;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDEFINED_VARIABLES = YES;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				SDKROOT = iphoneos;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
+		1A0000072C12345600000007 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = TalentLens/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = TalentLens;
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.sports";
+				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
+				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
+				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations = UIInterfaceOrientationPortrait;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.talentlens.ios;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		1A0000082C12345600000008 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = TalentLens/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = TalentLens;
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.sports";
+				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
+				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
+				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations = UIInterfaceOrientationPortrait;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.talentlens.ios;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		1A0000032C12345600000003 /* Build configuration list for PBXProject "TalentLens" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				1A0000052C12345600000005 /* Debug */,
+				1A0000062C12345600000006 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		1A0000042C12345600000004 /* Build configuration list for PBXNativeTarget "TalentLens" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				1A0000072C12345600000007 /* Debug */,
+				1A0000082C12345600000008 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+
+	};
+	rootObject = 1A0000012C12345600000001 /* Project object */;
+}
