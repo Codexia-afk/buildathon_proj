@@ -28,11 +28,12 @@ import {
   ReferenceLine 
 } from 'recharts';
 import { AssessmentResult, AthleteProfile } from '../../types';
-import { calculatePercentile, getTierBadgeColor, EXERCISE_CONFIGS } from '../../services/percentileEngine';
+import { calculatePercentile, getTierBadgeColor, EXERCISE_CONFIGS, getProForSport, getProTargetScore } from '../../services/percentileEngine';
 import { Button } from '../common/Button';
 import { saveAssessment } from '../../services/dataService';
 import { Link } from 'react-router-dom';
 import { AssessmentCertificate } from './AssessmentCertificate';
+import { ProAthleteComparisonModal } from './ProAthleteComparisonModal';
 
 interface VerifiedResultCardProps {
   athlete: AthleteProfile;
@@ -49,6 +50,11 @@ export const VerifiedResultCard: React.FC<VerifiedResultCardProps> = ({
   const [isPushing, setIsPushing] = useState(false);
   const [copiedLink, setCopiedLink] = useState(false);
   const [isCertificateOpen, setIsCertificateOpen] = useState(false);
+  const [isProModalOpen, setIsProModalOpen] = useState(false);
+
+  const matchedPro = getProForSport(assessment.sport);
+  const proTarget = getProTargetScore(matchedPro, assessment.testType);
+  const matchPct = Math.min(120, Math.round((assessment.score / Math.max(1, proTarget)) * 100));
 
   const config = EXERCISE_CONFIGS[assessment.testType] || EXERCISE_CONFIGS.pushups_standard;
   const percentileInfo = calculatePercentile(
@@ -229,6 +235,37 @@ export const VerifiedResultCard: React.FC<VerifiedResultCardProps> = ({
 
         </div>
 
+        {/* Pro Athlete Benchmark Match Banner */}
+        <button
+          onClick={() => setIsProModalOpen(true)}
+          className="w-full p-4 rounded-2xl bg-slate-950/90 border border-brand/40 hover:border-brand transition-all flex items-center justify-between gap-4 text-left group shadow-[0_0_20px_rgba(255,77,0,0.12)]"
+        >
+          <div className="flex items-center gap-3.5">
+            <div className="w-12 h-12 rounded-2xl bg-brand/15 border border-brand/30 flex items-center justify-center text-2xl shrink-0">
+              {matchedPro.iconEmoji}
+            </div>
+            <div>
+              <div className="flex items-center gap-2">
+                <span className="text-[10px] font-mono uppercase font-bold text-brand-400">
+                  PRO MATCH: {matchedPro.name}
+                </span>
+                <span className="text-[10px] font-mono text-slate-400">({matchedPro.title})</span>
+              </div>
+              <p className="text-sm font-bold text-white group-hover:text-brand-300 transition-colors">
+                {matchPct}% of Olympic/Pro Champion Benchmark
+              </p>
+              <p className="text-xs text-slate-400 mt-0.5 line-clamp-1">
+                Target: {proTarget} {config.unit} • Archetype: {matchedPro.physicalArchetype}
+              </p>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-brand/20 border border-brand/40 text-brand-300 text-xs font-bold whitespace-nowrap shrink-0">
+            <span>Compare vs Pro</span>
+            <ChevronRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
+          </div>
+        </button>
+
         {/* National Benchmark Distribution Chart */}
         <div className="space-y-3 pt-2">
           <div className="flex items-center justify-between text-xs font-mono text-slate-400">
@@ -341,6 +378,15 @@ export const VerifiedResultCard: React.FC<VerifiedResultCardProps> = ({
         <AssessmentCertificate
           assessment={assessment}
           onClose={() => setIsCertificateOpen(false)}
+        />
+      )}
+
+      {/* Pro Athlete Comparison Modal */}
+      {isProModalOpen && (
+        <ProAthleteComparisonModal
+          isOpen={isProModalOpen}
+          assessment={assessment}
+          onClose={() => setIsProModalOpen(false)}
         />
       )}
 

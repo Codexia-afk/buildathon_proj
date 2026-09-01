@@ -604,3 +604,199 @@ export function getSportProfile(sportName: string): SportTrainingProfile {
   return SPORT_TRAINING_DATABASE[sportName] || SPORT_TRAINING_DATABASE['Multi-Sport / General'];
 }
 
+import { ProAthleteBenchmark } from '../types';
+
+export const PRO_ATHLETES_DATASET: ProAthleteBenchmark[] = [
+  {
+    name: 'Neeraj Chopra',
+    sport: 'Athletics (Sprint/Jump)',
+    title: 'Olympic Javelin Champion',
+    achievement: 'Tokyo Olympic Gold & World Champion',
+    iconEmoji: '🥇',
+    physicalArchetype: 'Maximal Ground Reaction Force & Kinetic Torque',
+    pushupsScore: 60,
+    squatsScore: 70,
+    plankSeconds: 260,
+    verticalJumpCm: 76,
+    formPrecisionScore: 99,
+    signatureDrill: 'vertical_jump',
+    proAdviceQuote: 'Every centimeter of vertical spring translates directly into delivery stride braking force and javelin release speed.',
+    focusArea: 'Elastic Stride Plant & Explosive Ground Force'
+  },
+  {
+    name: 'Jasprit Bumrah',
+    sport: 'Cricket',
+    title: 'World #1 Fast Bowler',
+    achievement: 'ICC T20 World Champion & Test Spearhead',
+    iconEmoji: '🏏',
+    physicalArchetype: 'Hyper-Elastic Stride Plant & Anti-Rotational Core',
+    pushupsScore: 55,
+    squatsScore: 65,
+    plankSeconds: 240,
+    verticalJumpCm: 68,
+    formPrecisionScore: 98,
+    signatureDrill: 'vertical_jump',
+    proAdviceQuote: 'A rock-solid core protects the spine from the 8-10x bodyweight impact when you plant your front foot on the bowling crease.',
+    focusArea: 'Lumbar Core Protection & Release Acceleration'
+  },
+  {
+    name: 'Virat Kohli',
+    sport: 'Cricket',
+    title: 'Modern Cricket Legend',
+    achievement: 'ICC Player of the Decade & Fitness Icon',
+    iconEmoji: '⚡',
+    physicalArchetype: 'High-Cadence Deceleration & Relentless Core Stamina',
+    pushupsScore: 58,
+    squatsScore: 68,
+    plankSeconds: 260,
+    verticalJumpCm: 64,
+    formPrecisionScore: 98,
+    signatureDrill: 'squats_standard',
+    proAdviceQuote: 'Consistent deep squat conditioning allows you to sprint 3 runs at 95% speed in the 48th over in 40°C heat.',
+    focusArea: 'Running Between Wickets & High-Endurance Stride'
+  },
+  {
+    name: 'Sunil Chhetri',
+    sport: 'Football',
+    title: 'Indian Football Captain & Icon',
+    achievement: '4th Highest International Goalscorer in Football History',
+    iconEmoji: '⚽',
+    physicalArchetype: 'Aerial Apex Hang-Time & 90-Min Deceleration Engine',
+    pushupsScore: 50,
+    squatsScore: 68,
+    plankSeconds: 210,
+    verticalJumpCm: 74,
+    formPrecisionScore: 97,
+    signatureDrill: 'vertical_jump',
+    proAdviceQuote: 'Winning aerial headers is 70% explosive timing and vertical spring generated from the glutes and core.',
+    focusArea: 'Box Aerial Combat & Sprint Acceleration'
+  },
+  {
+    name: 'Bajrang Punia',
+    sport: 'Wrestling',
+    title: 'Olympic Wrestling Medalist',
+    achievement: 'Tokyo Olympic Bronze & 4x World Championship Medalist',
+    iconEmoji: '🤼',
+    physicalArchetype: 'Isometric Core Fortress & Mat Takedown Engine',
+    pushupsScore: 70,
+    squatsScore: 75,
+    plankSeconds: 300,
+    verticalJumpCm: 62,
+    formPrecisionScore: 98,
+    signatureDrill: 'plank_hold',
+    proAdviceQuote: 'On the mat, when opponents try to turn you, your plank stability is the difference between giving 2 points or escaping.',
+    focusArea: 'Parterre Defense & Leg Shot Rebounds'
+  },
+  {
+    name: 'PV Sindhu',
+    sport: 'Badminton',
+    title: '2x Olympic Medalist',
+    achievement: 'Rio Silver, Tokyo Bronze & BWF World Champion',
+    iconEmoji: '🏸',
+    physicalArchetype: 'Rear-Court Smash Apex & Extreme Lunge Recovery',
+    pushupsScore: 45,
+    squatsScore: 62,
+    plankSeconds: 200,
+    verticalJumpCm: 70,
+    formPrecisionScore: 97,
+    signatureDrill: 'vertical_jump',
+    proAdviceQuote: 'High apex vertical jumps give you steep angles on smashes that defenders simply cannot retrieve.',
+    focusArea: 'Apex Reach & Front-Court Lunge Deceleration'
+  },
+  {
+    name: 'Mary Kom',
+    sport: 'Boxing',
+    title: '6x World Boxing Champion',
+    achievement: 'Olympic Bronze & 6x World Amateur Boxing Champion',
+    iconEmoji: '🥊',
+    physicalArchetype: 'High-Cadence Punch Drive & Torso Body-Armor',
+    pushupsScore: 68,
+    squatsScore: 65,
+    plankSeconds: 250,
+    verticalJumpCm: 58,
+    formPrecisionScore: 98,
+    signatureDrill: 'pushups_standard',
+    proAdviceQuote: 'Your punches get their knockout power from the floor through deep legs and rapid arm extension.',
+    focusArea: 'Championship Round Cadence & Punch Shock Absorption'
+  },
+  {
+    name: 'Pardeep Narwal',
+    sport: 'Kabaddi',
+    title: 'Record Breaker "Dubki King"',
+    achievement: 'Pro Kabaddi Highest Raid Points Record Holder',
+    iconEmoji: '🤾',
+    physicalArchetype: 'Explosive Lateral Spring & Cantilever Core',
+    pushupsScore: 58,
+    squatsScore: 72,
+    plankSeconds: 240,
+    verticalJumpCm: 70,
+    formPrecisionScore: 96,
+    signatureDrill: 'squats_standard',
+    proAdviceQuote: 'Deep squats build the explosive knee recoil needed to slip under chain tackles in a split second.',
+    focusArea: 'Dubki Escape Rebound & Bonus Line Spring'
+  },
+  {
+    name: 'Mirabai Chanu',
+    sport: 'Weightlifting',
+    title: 'Olympic Weightlifting Silver Medalist',
+    achievement: 'Tokyo Olympic 49kg Silver & World Champion',
+    iconEmoji: '🏋️',
+    physicalArchetype: 'Olympic ATG Deep Hip Mobility & Maximum Intra-Abdominal Rigidity',
+    pushupsScore: 58,
+    squatsScore: 80,
+    plankSeconds: 320,
+    verticalJumpCm: 66,
+    formPrecisionScore: 99,
+    signatureDrill: 'squats_standard',
+    proAdviceQuote: 'Full sub-80° squat depth with an upright spine is the absolute foundation of lifting 2x your bodyweight.',
+    focusArea: 'Olympic Clean Catch & Intra-Abdominal Rigidity'
+  },
+  {
+    name: 'Manpreet Singh',
+    sport: 'Hockey',
+    title: 'Olympic Hockey Captain',
+    achievement: 'Tokyo Olympic Bronze & Asian Games Gold',
+    iconEmoji: '🏑',
+    physicalArchetype: 'Low-Crouch Drag-Flick Torque & Turf Breakaway',
+    pushupsScore: 52,
+    squatsScore: 66,
+    plankSeconds: 220,
+    verticalJumpCm: 62,
+    formPrecisionScore: 97,
+    signatureDrill: 'squats_standard',
+    proAdviceQuote: 'Low posture quad stamina allows you to control the ball at full sprint without burning your lower back.',
+    focusArea: 'Sustained Low-Crouch & Counter-Attack Sprint'
+  },
+  {
+    name: 'Usain Bolt',
+    sport: 'Multi-Sport / General',
+    title: '8x Olympic Gold Sprint Legend',
+    achievement: '100m (9.58s) & 200m World Record Holder',
+    iconEmoji: '⚡',
+    physicalArchetype: 'Peak Ground Reaction Velocity & Elastic Stride Power',
+    pushupsScore: 65,
+    squatsScore: 72,
+    plankSeconds: 280,
+    verticalJumpCm: 82,
+    formPrecisionScore: 99,
+    signatureDrill: 'vertical_jump',
+    proAdviceQuote: 'Sprint speed is all about producing maximum vertical and horizontal ground force in under 0.08 seconds per foot contact.',
+    focusArea: 'Rate of Force Development & Sprint Elasticity'
+  }
+];
+
+export function getProForSport(sportName: string): ProAthleteBenchmark {
+  return PRO_ATHLETES_DATASET.find(p => p.sport === sportName) || PRO_ATHLETES_DATASET[0];
+}
+
+export function getProTargetScore(pro: ProAthleteBenchmark, testType: TestType): number {
+  switch (testType) {
+    case 'pushups_standard': return pro.pushupsScore;
+    case 'squats_standard': return pro.squatsScore;
+    case 'plank_hold': return pro.plankSeconds;
+    case 'vertical_jump': return Math.round(pro.verticalJumpCm);
+    default: return 50;
+  }
+}
+
+

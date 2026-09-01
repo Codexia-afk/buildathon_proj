@@ -170,3 +170,21 @@ export interface SportTrainingProfile {
   gymCoachingTip: string;
 }
 
+export interface ProAthleteBenchmark {
+  name: string;
+  sport: SportType;
+  title: string;
+  achievement: string;
+  iconEmoji: string;
+  physicalArchetype: string;
+  pushupsScore: number;
+  squatsScore: number;
+  plankSeconds: number;
+  verticalJumpCm: number;
+  formPrecisionScore: number;
+  signatureDrill: TestType;
+  proAdviceQuote: string;
+  focusArea: string;
+}
+
+

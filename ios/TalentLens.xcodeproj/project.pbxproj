@@ -28,6 +28,7 @@
 		1A0214000000000000000014 /* ResultScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A0114000000000000000014 /* ResultScreen.swift */; };
 		1A0215000000000000000015 /* ScoutFeedScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A0115000000000000000015 /* ScoutFeedScreen.swift */; };
 		1A0216000000000000000016 /* BenchmarksScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A0116000000000000000016 /* BenchmarksScreen.swift */; };
+		1A0217000000000000000017 /* ProAthleteComparisonView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A0117000000000000000017 /* ProAthleteComparisonView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -54,6 +55,7 @@
 		1A0114000000000000000014 /* ResultScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ResultScreen.swift; sourceTree = "<group>"; };
 		1A0115000000000000000015 /* ScoutFeedScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScoutFeedScreen.swift; sourceTree = "<group>"; };
 		1A0116000000000000000016 /* BenchmarksScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BenchmarksScreen.swift; sourceTree = "<group>"; };
+		1A0117000000000000000017 /* ProAthleteComparisonView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProAthleteComparisonView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -168,6 +170,7 @@
 				1A010F00000000000000000F /* AthleteDetailModalView.swift */,
 				1A0110000000000000000010 /* AthleteComparisonModalView.swift */,
 				1A0111000000000000000011 /* ProfileSetupModalView.swift */,
+				1A0117000000000000000017 /* ProAthleteComparisonView.swift */,
 			);
 			path = Components;
 			sourceTree = "<group>";
@@ -273,6 +276,7 @@
 				1A0214000000000000000014 /* ResultScreen.swift in Sources */,
 				1A0215000000000000000015 /* ScoutFeedScreen.swift in Sources */,
 				1A0216000000000000000016 /* BenchmarksScreen.swift in Sources */,
+				1A0217000000000000000017 /* ProAthleteComparisonView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

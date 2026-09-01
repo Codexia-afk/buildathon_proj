@@ -13,6 +13,7 @@ public struct ResultScreen: View {
     public let onNavigateToScout: () -> Void
     
     @State private var showCertificate: Bool = false
+    @State private var showProComparison: Bool = false
     @State private var isBroadcasted: Bool = false
     
     public init(
@@ -31,6 +32,16 @@ public struct ResultScreen: View {
     
     private var drillInfo: SportTrainingDrill? {
         sportProfile.recommendedDrills.first(where: { $0.exerciseType == assessment.exerciseType })
+    }
+    
+    private var matchedPro: ProAthleteBenchmark {
+        ProAthleteDataset.proForSport(assessment.sport)
+    }
+    
+    private var proMatchPct: Int {
+        let target = max(1, matchedPro.targetScore(for: assessment.exerciseType))
+        let pct = (Float(assessment.score) / Float(target)) * 100.0
+        return Int(min(120.0, pct))
     }
     
     public var body: some View {
@@ -131,6 +142,44 @@ public struct ResultScreen: View {
                             .frame(maxWidth: .infinity)
                         }
                         
+                        // Pro Athlete Match Banner
+                        Button(action: { showProComparison = true }) {
+                            HStack(spacing: 12) {
+                                ZStack {
+                                    Circle()
+                                        .fill(TLTheme.brandOrange.opacity(0.2))
+                                        .frame(width: 44, height: 44)
+                                    Text(matchedPro.iconEmoji)
+                                        .font(.title3)
+                                }
+                                
+                                VStack(alignment: .leading, spacing: 2) {
+                                    HStack {
+                                        Text("PRO MATCH:")
+                                            .font(.system(size: 9, weight: .bold, design: .monospaced))
+                                            .foregroundColor(TLTheme.brandOrange)
+                                        Text(matchedPro.name)
+                                            .font(.system(size: 13, weight: .bold))
+                                            .foregroundColor(TLTheme.textPrimary)
+                                    }
+                                    
+                                    Text("\(proMatchPct)% of \(matchedPro.title) Benchmark")
+                                        .font(.system(size: 11))
+                                        .foregroundColor(TLTheme.textSecondary)
+                                }
+                                
+                                Spacer()
+                                
+                                Image(systemName: "chevron.right")
+                                    .foregroundColor(TLTheme.brandOrange)
+                                    .font(.system(size: 14, weight: .bold))
+                            }
+                            .padding(12)
+                            .background(TLTheme.cardBackground.opacity(0.9))
+                            .cornerRadius(16)
+                            .overlay(RoundedRectangle(cornerRadius: 16).stroke(TLTheme.brandOrange.opacity(0.4), lineWidth: 1))
+                        }
+                        
                         // Sport Readiness Context Card
                         if let drill = drillInfo {
                             VStack(alignment: .leading, spacing: 6) {
@@ -182,6 +231,21 @@ public struct ResultScreen: View {
                     
                     // Actions
                     VStack(spacing: 12) {
+                        // Compare vs Pro Athlete Button
+                        Button(action: { showProComparison = true }) {
+                            HStack(spacing: 8) {
+                                Text("⭐")
+                                Text("Compare vs Pro Champions Dataset")
+                                    .font(.system(size: 15, weight: .bold))
+                                    .foregroundColor(TLTheme.textPrimary)
+                            }
+                            .frame(maxWidth: .infinity)
+                            .frame(height: 52)
+                            .background(TLTheme.cyberCyan.opacity(0.15))
+                            .cornerRadius(16)
+                            .overlay(RoundedRectangle(cornerRadius: 16).stroke(TLTheme.cyberCyan.opacity(0.5), lineWidth: 1.5))
+                        }
+                        
                         Button(action: { showCertificate = true }) {
                             HStack(spacing: 8) {
                                 Image(systemName: "rosette")
@@ -231,6 +295,12 @@ public struct ResultScreen: View {
                     .padding(.bottom, 24)
                 }
             }
+        }
+        .sheet(isPresented: $showProComparison) {
+            ProAthleteComparisonView(
+                userAssessment: assessment,
+                onDismiss: { showProComparison = false }
+            )
         }
         .sheet(isPresented: $showCertificate) {
             CertificateModalView(
