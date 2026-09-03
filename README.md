@@ -14,79 +14,100 @@ An Olympic-grade computer vision platform that turns any smartphone into an AI-p
 [![CameraX](https://img.shields.io/badge/CameraX-1.3.4-34A853?logo=android&logoColor=white)](https://developer.android.com/training/camerax)
 [![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-3.4-38B2AC?logo=tailwind-css&logoColor=white)](https://tailwindcss.com/)
 [![Firebase](https://img.shields.io/badge/Firebase-Firestore-FFCA28?logo=firebase&logoColor=black)](https://firebase.google.com/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.5-3178C6?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 
-[**Live Web App**](http://localhost:5173) • [**Native iOS (Xcode/SwiftUI)**](#-native-ios-app-swiftui--xcode) • [**Native Android (Kotlin)**](#-native-android-app-kotlin--jetpack-compose) • [**Sport Gym Batteries**](#-sport-specific-gym-practice-batteries) • [**Pro Athlete Dataset**](#-world-class-pro-athlete-dataset--comparison-engine) • [**Scout Command Center**](#-scout--coach-command-center)
+[**Live Web App**](http://localhost:5173) • [**Tri-Platform Architecture**](#-tri-platform-architecture) • [**Physics & Biomechanics**](#-multi-exercise-athletic-assessment-suite) • [**Sport Gym Batteries**](#-sport-specific-gym-practice-batteries) • [**Pro Athlete Dataset**](#-world-class-pro-athlete-dataset--comparison-engine) • [**Scout Command Center**](#-scout--coach-command-center) • [**Quick Start**](#-quick-start--installation)
 
 ---
 
 </div>
 
-## 📌 Tri-Platform Architecture: iOS (Xcode), Android & Web PWA
+## 🌟 Key Capabilities at a Glance
 
-TalentLens is delivered across **three high-performance implementations**:
+- 🎯 **Edge AI Biomechanical Engine**: 33 anatomical skeletal landmarks tracked at 30+ FPS locally on-device. Zero video frames uploaded to servers.
+- 📱 **Tri-Platform Native Parity**: First-class support across **iOS (SwiftUI + Apple Vision)**, **Android (Kotlin + MediaPipe)**, and **Web PWA (React 18 + Vite)**.
+- 📊 **SAI & Khelo India Percentile Engine**: Continuous spline interpolation comparing scores across Indian national age/gender cohorts (0 to 99.9th percentile).
+- ⭐ **11 Olympic & Pro Champions Dataset**: Compare power, endurance, and form directly against legends like **Neeraj Chopra**, **Jasprit Bumrah**, **Virat Kohli**, **PV Sindhu**, **Mary Kom**, and **Usain Bolt**.
+- 🏋️‍♂️ **10 Sport-Specific Gym Batteries**: Curated gym drills, kinetic chain rationales, and elite targets for Cricket, Wrestling, Football, Kabaddi, Badminton, Boxing, Athletics, Weightlifting, Hockey, and Multi-Sport.
+- 🔍 **Live Scout & Coach Command Center**: Real-time reactive stream of athlete assessments, multi-dimensional filters, radar charts, athlete dossier inspector, shortlisting, coach review notes, and CSV export.
+- 🎙️ **Real-Time Voice Coaching & Haptics**: Voice cues (`AVSpeechSynthesizer`, Android TTS, Web Speech API) providing form correction and rep counts during workouts.
+- 📜 **Tamper-Evident Digital Certificates**: Generates verifiable digital credentials with unique SHA-based verification hashes (e.g., `TL-98-HAR-5921`) and shareable athlete cards.
+
+---
+
+## 📌 Tri-Platform Architecture
+
+TalentLens is architected from the ground up for seamless cross-platform performance:
+
+```
+                               ┌─────────────────────────────────────────────────────────┐
+                               │                    TALENTLENS CLIENTS                   │
+                               └──────┬───────────────────┬───────────────────┬──────────┘
+                                      │                   │                   │
+                                      ▼                   ▼                   ▼
+                           ┌─────────────────────┐┌──────────────────┐┌──────────────────┐
+                           │   🍎 Native iOS     ││ 🤖 Native Android││  🌐 Web PWA      │
+                           │ • Swift & SwiftUI   ││ • Kotlin Compose ││ • React 18 + TS  │
+                           │ • Apple Vision API  ││ • MediaPipe Tasks││ • Vite + Tailwind│
+                           │ • AVFoundation      ││ • CameraX Stream ││ • MediaPipe Web  │
+                           │ • Neural Engine NPU ││ • GPU Accel      ││ • Web Speech/PWA │
+                           └──────────┬──────────┘└─────────┬────────┘└─────────┬────────┘
+                                      │                     │                   │
+                                      └─────────────────────┼───────────────────┘
+                                                            ▼
+                                ┌───────────────────────────────────────────────────────┐
+                                │             BIOMECHANICAL INFERENCE ENGINE            │
+                                │ • 33-Point Skeletal Landmark Tracking @ 30+ FPS       │
+                                │ • Trigonometric Joint Angle & Form Validation         │
+                                │ • Deterministic Finite State Machine (FSM)            │
+                                │ • Vertical Jump Kinematics & Hang-Time Physics        │
+                                └───────────────────────────┬───────────────────────────┘
+                                                            │
+                                                            ▼
+                                ┌───────────────────────────────────────────────────────┐
+                                │              ANALYTICS & COMPARISON CORE              │
+                                │ • SAI / Khelo India Spline Percentile Interpolation   │
+                                │ • 11 Pro Champion Head-to-Head Comparison Matrix      │
+                                │ • Tamper-Evident SHA Protocol Hash Generation         │
+                                └───────────────────────────┬───────────────────────────┘
+                                                            │
+                                                            ▼
+                                ┌───────────────────────────────────────────────────────┐
+                                │               REAL-TIME PERSISTENCE MESH              │
+                                │   Local Reactive Mesh (BroadcastChannel + Storage)    │
+                                │   Cloud Streaming (Google Cloud Firebase Firestore)   │
+                                └───────────────────────────┬───────────────────────────┘
+                                                            │
+                                                            ▼
+                                ┌───────────────────────────────────────────────────────┐
+                                │               SCOUT & COACH COMMAND CENTER            │
+                                │ • Live Real-Time Assessment Discovery Feed            │
+                                │ • Multi-Dimensional Filters (Sport, State, %ile)      │
+                                │ • Head-to-Head Radar Matrix & Historical Dossiers     │
+                                │ • Scout Shortlist Desk, Notes & CSV Talent Export     │
+                                └───────────────────────────────────────────────────────┘
+```
+
+### Platform Details:
 
 1. **🍎 Native iOS App (`ios/`)**:
    - Written in **100% Swift & SwiftUI** for iOS 16+.
    - Integrates **Apple Vision Framework (`VNDetectHumanBodyPoseRequest`)** and **AVFoundation** for 30+ FPS edge AI inference on the Apple Neural Engine.
-   - Built-in **AVSpeechSynthesizer** AI Voice Coach, audio haptics, digital certificate generation, Pro Athlete Comparison sheet & native iOS ShareLink.
+   - Built-in **AVSpeechSynthesizer** AI Voice Coach, audio haptics, digital certificate generation, Pro Athlete Comparison sheet & native iOS `ShareLink`.
    - Ready to open and run directly in **Xcode** (`ios/TalentLens.xcodeproj`).
+   - Includes **AI Simulation Mode** (`CPU` toggle) to test live movement in the iOS Simulator without hardware cameras.
+
 2. **📱 Native Android App (`android/`)**:
    - Written in **100% Kotlin** with **Jetpack Compose & Material 3**.
    - Integrates **CameraX** for GPU-accelerated frame streaming and **Google MediaPipe Tasks Vision Android SDK** for 30+ FPS edge AI inference.
    - Built-in **TextToSpeech (TTS)** AI Voice Coach and **ToneGenerator** audio synthesizer.
+   - Ready to open and run in **Android Studio** (`android/`).
+
 3. **🌐 Progressive Web App (Root `src/`)**:
    - Built with **React 18 + TypeScript + Vite + Tailwind CSS**.
    - Zero-installation instant access in any mobile browser (Chrome/Safari) with **PWA "Add to Home Screen"** and Web Audio/Speech synthesis.
-
----
-
-## ⚡ Architecture & How It Works
-
-```
-                                  TALENTLENS DATA PIPELINE
-                                  
- ┌───────────────────────────────────────────────────────────────────────────────────────┐
- │                                    ATHLETE CLIENT                                     │
- │   [Apple Vision / MediaPipe / Camera Feed]                                            │
- │             │ (30+ FPS Real-Time Video Stream)                                        │
- │             ▼                                                                         │
- │   [Landmark Extraction] ────────► 33 2D/3D Anatomical Skeletal Nodes                  │
- │             │                                                                         │
- │             ▼                                                                         │
- │   [Biomechanical FSM] ──────────► Joint Trigonometry: Elbow, Knee & Spine Alignment   │
- │             │                     State Machine: IDLE ➔ READY ➔ DOWN ➔ UP ➔ REP++    │
- │             ▼                                                                         │
- │   [Percentile Engine] ──────────► Continuous Spline Interpolation on SAI/Khelo Norms  │
- │             │                     National Cohort Ranking (0 – 99.9th Percentile)     │
- │             ▼                                                                         │
- │   [Pro Comparison Engine] ──────► Head-to-Head vs 11 Olympic Champions (e.g. Neeraj)  │
- │             │                     Metric Match % & Milestone Gap Analysis             │
- │             ▼                                                                         │
- │   [Verified Result Card] ───────► Unique Protocol Hash (e.g. TL-98-HAR-5921)          │
- └──────────────────────────────────────────┬────────────────────────────────────────────┘
-                                            │
-                                            ▼
- ┌───────────────────────────────────────────────────────────────────────────────────────┐
- │                              REAL-TIME PERSISTENCE MESH                               │
- │                                                                                       │
- │   ┌─────────────────────────────────────────┐  ┌───────────────────────────────────┐  │
- │   │        Local Reactive Mesh (Zero-Config)│  │   Cloud Mode: Google Firebase     │  │
- │   │ • Multi-Tab `BroadcastChannel` API      │OR│ • Cloud Firestore `onSnapshot`    │  │
- │   │ • Cross-Window `StorageEvent` Stream    │  │ • Multi-Device Realtime Sync      │  │
- │   └─────────────────────────────────────────┘  └───────────────────────────────────┘  │
- └──────────────────────────────────────────┬────────────────────────────────────────────┘
-                                            │ (Sub-100ms Live Broadcast)
-                                            ▼
- ┌───────────────────────────────────────────────────────────────────────────────────────┐
- │                                SCOUT & COACH DASHBOARD                                │
- │                                                                                       │
- │   • Live Assessment Feed with Real-Time Pulse Indicators                              │
- │   • Multi-Dimensional Filters: Test Type, Sport, State (28 States), Min %ile          │
- │   • Head-to-Head Comparison Matrix with Multilateral Radar Visualizations             │
- │   • Scout Review Desk: Athlete Dossier Inspection, Coach Notes, Shortlist & CSV Export│
- └───────────────────────────────────────────────────────────────────────────────────────┘
-```
+   - Works fully offline with local reactive persistence and optional Firebase cloud sync.
 
 ---
 
@@ -96,10 +117,25 @@ TalentLens provides Olympic-grade computer vision testing across 4 foundational 
 
 | Exercise | Physical Quality | Biomechanical Form Requirement | Unit | Physics / Biomechanics Model |
 | :--- | :--- | :--- | :--- | :--- |
-| **Standard Push-Ups** | Upper Body Muscular Endurance | Elbow flexion $\le 90^\circ$ depth, $> 155^\circ$ lockout, straight spine | Reps | 3-point joint angle $\theta = \arccos\left(\frac{\mathbf{u}\cdot\mathbf{v}}{\|\mathbf{u}\|\|\mathbf{v}\|}\right)$ |
+| **Standard Push-Ups** | Upper Body Muscular Endurance | Elbow flexion $\le 90^\circ$ depth, $> 155^\circ$ lockout, straight spine ($155^\circ - 185^\circ$) | Reps | 3-point joint angle: $\theta = \arccos\left(\frac{\mathbf{u}\cdot\mathbf{v}}{\|\mathbf{u}\|\|\mathbf{v}\|}\right)$ |
 | **Deep Bodyweight Squats** | Lower Body Strength & Hip Mobility | Knee flexion $\le 90^\circ$ (parallel/deep), standing lockout $> 160^\circ$ | Reps | Hip crease below knee level tracking |
 | **Isometric Plank Hold** | Core Stability & Spine Alignment | Neutral spine alignment angle ($155^\circ - 185^\circ$) held to failure | Seconds | Torso straightness deviation penalty engine |
-| **Vertical Jump Power** | Explosive Leg Power & Rate of Force | Countermovement dip $\to$ takeoff $\to$ flight hang time | Centimeters | Hang-time physics: $h = \frac{g t^2}{8} \times 100$ |
+| **Vertical Jump Power** | Explosive Leg Power & Rate of Force | Countermovement dip $\to$ takeoff $\to$ flight hang time | Centimeters | Hang-time kinematics: $h = \frac{g t^2}{8} \times 100$ |
+
+### 📐 Biomechanical Formulas & Physics Engine:
+
+1. **Joint Angle Trigonometry**:
+   Given three consecutive anatomical landmarks $A(x_a, y_a)$, $B(x_b, y_b)$ (the vertex), and $C(x_c, y_c)$:
+   $$\mathbf{u} = A - B, \quad \mathbf{v} = C - B$$
+   $$\theta = \arccos\left(\frac{\mathbf{u} \cdot \mathbf{v}}{\|\mathbf{u}\| \|\mathbf{v}\|}\right) \times \left(\frac{180^\circ}{\pi}\right)$$
+
+2. **Vertical Jump Height from Hang Time**:
+   Calculated from time airborne between foot takeoff and touchdown ($t$ in seconds) using gravitational acceleration ($g = 9.80665 \text{ m/s}^2$):
+   $$h = \frac{1}{2} g \left(\frac{t}{2}\right)^2 = \frac{g t^2}{8} \times 100 \text{ cm}, \quad v_0 = \sqrt{2gh}$$
+
+3. **Continuous Spline Percentile Interpolation**:
+   Interpolates exact athlete scores against age- and gender-specific Indian national benchmarks published by the Sports Authority of India (SAI):
+   $$\text{Percentile}(s) = P_1 + (s - S_1) \times \frac{P_2 - P_1}{S_2 - S_1}$$
 
 ---
 
@@ -124,7 +160,7 @@ TalentLens maps tailored exercise drills, sport biomechanical rationales, and ta
 
 ## ⭐ World-Class Pro Athlete Dataset & Comparison Engine
 
-TalentLens includes an empirical baseline dataset of **11 World-Class & Olympic Champions** across all sports. When athletes complete their gym workout or fitness assessment, they can compare their metrics **head-to-head with top-class pro champions**:
+TalentLens includes an empirical baseline dataset of **11 World-Class & Olympic Champions** across all sports disciplines. When athletes complete their gym workout or fitness assessment, they can compare their metrics **head-to-head with top-class pro champions**:
 
 | Champion | Sport | Titles & Achievements | Physical Archetype & Benchmark Standard | Signature Drill |
 | :--- | :--- | :--- | :--- | :--- |
@@ -144,130 +180,151 @@ TalentLens includes an empirical baseline dataset of **11 World-Class & Olympic 
 - **Pro Match Dial**: Computes the exact percentage match ($\%$) of the champion's score (e.g., *84% of Jasprit Bumrah's Fast Bowling Jump Power*).
 - **Milestone Gap Analysis**: Calculates the exact gym gains needed to reach Olympic level (e.g., *"+9 cm jump height needed to match Neeraj Chopra's benchmark"*).
 - **Champion Coaching Quotes**: Real training advice from the champions explaining how they master that physical quality.
-- **Champion Switcher**: Switch and compare against any champion in the 11-athlete dataset!
+- **Champion Switcher**: Switch and compare against any champion in the 11-athlete dataset seamlessly.
 
 ---
 
-## 🍎 Native iOS App (SwiftUI + Xcode)
+## 🔍 Scout & Coach Command Center
 
-The native iOS application source code and Xcode project are located in [`ios/`](ios/):
+The Scout Dashboard provides national selectors, sports academies, and grassroots coaches with an end-to-end scouting pipeline:
 
-### iOS Project Structure:
-```
-ios/
-├── TalentLens.xcodeproj/              # Open directly in Xcode (iOS 16+)
-│   └── project.pbxproj               # Project build settings & file references
-└── TalentLens/
-    ├── Info.plist                     # Camera (NSCameraUsageDescription) & audio permissions
-    ├── TalentLensApp.swift            # App lifecycle entry point (@main)
-    ├── ContentView.swift              # Root Tab Navigation (Home, Workout, Scout, Standards)
-    ├── Model/
-    │   └── DataModels.swift           # Enums, ProAthleteDataset & SportTrainingDatabase
-    ├── Engine/
-    │   ├── GeometryUtils.swift        # Joint angle trigonometry & jump physics
-    │   ├── ExerciseStateEngine.swift  # Deterministic FSM state machine
-    │   └── PercentileEngine.swift     # Indian national percentile interpolation
-    ├── Data/
-    │   └── AthleteRepository.swift    # Reactive repository, 5 seed athletes, CSV export
-    ├── Audio/
-    │   └── VoiceCoachService.swift    # AVSpeechSynthesizer AI Voice Coach & sound cues
-    ├── ML/
-    │   ├── CameraManager.swift        # AVFoundation live camera frame stream
-    │   └── PoseDetectorHelper.swift   # Apple Vision VNDetectHumanBodyPoseRequest & AI Simulator
-    └── UI/
-        ├── Theme/
-        │   └── Colors.swift           # Sports-tech dark palette
-        ├── Components/
-        │   ├── PoseSkeletonOverlayView.swift   # Real-time SwiftUI Canvas skeleton & HUD
-        │   ├── ProAthleteComparisonView.swift  # Pro champion head-to-head comparison modal
-        │   ├── CertificateModalView.swift      # Official credential certificate & ShareLink
-        │   ├── AthleteDetailModalView.swift    # Athlete dossier, biomechanics & scout notes
-        │   ├── AthleteComparisonModalView.swift # Scout head-to-head comparison matrix
-        │   └── ProfileSetupModalView.swift     # Athlete profile editor (16 Indian states)
-        └── Screens/
-            ├── HomeScreen.swift       # Dual-entry landing screen + Sport Battery directory
-            ├── WorkoutScreen.swift    # Live Camera + Vision Pose HUD + AI Simulation
-            ├── ResultScreen.swift     # Verified result & Pro Champion comparison
-            ├── ScoutFeedScreen.swift  # Real-time discovery feed
-            └── BenchmarksScreen.swift # Pro Champions dataset + SAI percentile calculator
-```
-
-### Running the iOS App in Xcode:
-1. Open the project in **Xcode**:
-   ```bash
-   open ios/TalentLens.xcodeproj
-   ```
-2. Select your run destination (e.g. **iPhone 17**, **iPhone 16 Pro**, or your connected iPhone).
-3. Press **Run (`Cmd + R`)** to build and launch.
-4. *Tip*: If running in the **iOS Simulator** (which has no physical camera), tap the **`CPU` (AI Simulation)** button in the Workout screen to simulate realistic athletic movement in real-time!
+- **Live Assessment Feed**: Real-time event stream displaying new verified athlete submissions as they complete assessments across India.
+- **Multi-Dimensional Filters**: Filter by Test Type, Sport, State (all 28 states & UTs), Age Brackets, and Minimum National Percentile (Top 5%, Top 15%, Top 30%).
+- **Head-to-Head Comparison Matrix**: Select any two athletes to render a side-by-side biomechanical breakdown with radar visualizations.
+- **Athlete Dossier Inspector**: View athlete profiles, historical progression curves, form scores, and verified video telemetry.
+- **Scout Shortlist & Notes**: Add private scout assessment notes and bookmark promising talent directly to the Scout Shortlist Drawer.
+- **CSV Data Export**: One-click export of verified athlete rosters and scores for official SAI / federation reporting.
 
 ---
 
-## 🤖 Native Android App (Kotlin + Jetpack Compose)
+## 📂 Repository Structure
 
-The complete native Android mobile application source code is available in [`android/`](android/):
-
-### Android Project Structure:
 ```
-android/
-├── app/
-│   ├── build.gradle.kts          # Dependencies: CameraX, MediaPipe, Compose, Coroutines
-│   └── src/main/
-│       ├── AndroidManifest.xml   # Camera permissions & hardware acceleration
-│       └── java/com/talentlens/app/
-│           ├── MainActivity.kt   # Navigation Compose & Root Bottom Bar Scaffold
-│           ├── model/            # Kotlin Data Models (ProAthleteDataset, AthleteProfile, etc.)
-│           ├── engine/
-│           │   ├── GeometryUtils.kt        # Joint angle trigonometry & jump height physics
-│           │   ├── ExerciseStateEngine.kt  # Deterministic FSM state machine
-│           │   └── PercentileEngine.kt     # Indian national percentile interpolation
-│           ├── ml/
-│           │   └── PoseDetectorHelper.kt   # MediaPipe Tasks Vision PoseLandmarker
-│           ├── audio/
-│           │   └── VoiceCoachService.kt    # Android TextToSpeech & ToneGenerator
-│           └── ui/
-│               ├── theme/        # Sports-tech dark color palette
-│               ├── components/   # Compose PoseSkeletonOverlay & CertificateView
-│               └── screens/
-│                   ├── HomeScreen.kt       # Dual-entry landing screen
-│                   ├── WorkoutScreen.kt    # CameraX live preview + HUD
-│                   ├── ResultScreen.kt     # Verified result & national %ile
-│                   ├── ScoutFeedScreen.kt  # Real-time discovery feed
-│                   └── BenchmarksScreen.kt # Interactive standards calculator
-├── build.gradle.kts
-└── settings.gradle.kts
+MIro/
+├── public/                     # Static assets & PWA manifest
+├── src/                        # Web PWA Source Code (React + Vite + TypeScript)
+│   ├── components/
+│   │   ├── athlete/            # Camera workout, HUD, skeleton canvas, certificates, pro modal
+│   │   ├── benchmark/          # Interactive national percentile & SAI standard explorer
+│   │   ├── common/             # Navigation, modals, buttons, badges, footer
+│   │   ├── landing/            # Hero section, feature showcase, mission banner
+│   │   └── scout/              # Live discovery feed, athlete table, comparison matrix, shortlist
+│   ├── data/
+│   │   ├── benchmarks.json     # SAI & Khelo India age/gender percentile distribution tables
+│   │   └── seedAthletes.ts     # Baseline athlete dataset, sport batteries, pro athlete roster
+│   ├── hooks/
+│   │   ├── useExerciseEngine.ts # Finite state machine & biomechanics processor
+│   │   ├── usePoseDetection.ts  # MediaPipe Tasks Vision edge worker hook
+│   │   └── usePushUpCounter.ts  # Real-time counter hook
+│   ├── services/
+│   │   ├── audioService.ts      # Web Audio sound cues & Web Speech voice coaching
+│   │   ├── dataService.ts       # Reactive local mesh (BroadcastChannel) & Firestore sync
+│   │   ├── firebase.ts          # Firebase configuration loader
+│   │   └── percentileEngine.ts  # Mathematical continuous spline percentile calculator
+│   ├── types/                  # TypeScript interface declarations
+│   ├── App.tsx                 # Root application component & routing
+│   └── main.tsx                # React DOM root mounting
+├── ios/                        # Native iOS Application (SwiftUI + Xcode)
+│   ├── TalentLens.xcodeproj/   # Xcode project configuration
+│   └── TalentLens/             # Swift sources (Vision Pose Detection, AVSpeech, Audio, Views)
+├── android/                    # Native Android Application (Kotlin + Jetpack Compose)
+│   ├── app/                    # Compose UI, CameraX, MediaPipe Android SDK, TTS
+│   ├── build.gradle.kts
+│   └── settings.gradle.kts
+├── package.json                # Web dependencies & scripts
+├── tailwind.config.js          # Tailwind CSS styling configuration
+├── tsconfig.json               # TypeScript configuration
+└── vite.config.ts              # Vite bundler configuration
 ```
-
-### Running the Android App:
-1. Open the `android/` directory in **Android Studio (Hedgehog / Iguana / Ladybug)**.
-2. Ensure you have Android SDK 34 installed.
-3. Connect an Android device (or launch an Emulator with Camera support).
-4. Run `app` (`Shift + F10`).
 
 ---
 
-## 🛠️ Quick Start (Web PWA)
+## 🚀 Quick Start & Installation
 
-### Prerequisites:
-- **Node.js**: v18.0 or higher
-- **Browser**: Google Chrome / Safari / Edge
+### 🌐 1. Web Progressive Web App (PWA)
+
+#### Prerequisites:
+- **Node.js**: `v18.0` or higher
+- **Browser**: Google Chrome / Safari / Edge (with camera permissions allowed)
 
 ```bash
+# Clone repository
 git clone https://github.com/Codexia-afk/buildathon_proj.git
 cd buildathon_proj
+
+# Install dependencies
 npm install
+
+# Start local development server
 npm run dev
 ```
+
 Open **[http://localhost:5173](http://localhost:5173)** in your browser.
+
+#### Optional Firebase Cloud Sync:
+Create a `.env` file in the root directory (based on `.env.example`):
+```env
+VITE_FIREBASE_API_KEY=your_api_key
+VITE_FIREBASE_AUTH_DOMAIN=your_project.firebaseapp.com
+VITE_FIREBASE_PROJECT_ID=your_project_id
+VITE_FIREBASE_STORAGE_BUCKET=your_project.appspot.com
+VITE_FIREBASE_MESSAGING_SENDER_ID=your_sender_id
+VITE_FIREBASE_APP_ID=your_app_id
+```
+*(Note: If Firebase credentials are not provided, TalentLens runs seamlessly in zero-config reactive multi-tab local mesh mode!)*
+
+---
+
+### 🍎 2. Native iOS App (SwiftUI + Xcode)
+
+#### Prerequisites:
+- **macOS**: Sonoma 14+ or Sequoia 15+
+- **Xcode**: 15.0+ or 16.0+
+- **iOS Target**: iOS 16.0+
+
+```bash
+# Open Xcode project
+open ios/TalentLens.xcodeproj
+```
+
+1. Select your target simulator (e.g., **iPhone 16 Pro**) or a connected physical iPhone.
+2. Press **`Cmd + R`** to build and run.
+3. *Tip for Simulator*: Tap the **`CPU` (AI Simulation)** button on the Workout screen to simulate athletic movements and test the pose estimation engine without a physical camera!
+
+---
+
+### 🤖 3. Native Android App (Kotlin + Jetpack Compose)
+
+#### Prerequisites:
+- **Android Studio**: Hedgehog, Iguana, or Ladybug
+- **Android SDK**: API Level 34 (Android 14)
+- **Minimum SDK**: API Level 26 (Android 8.0)
+
+1. Open the `android/` directory in **Android Studio**.
+2. Allow Gradle sync to complete.
+3. Connect an Android device with USB debugging enabled (or start an Android Emulator).
+4. Run `app` (**`Shift + F10`**).
+
+---
+
+## 🔒 Privacy & Edge AI Architecture
+
+TalentLens is built with an absolute commitment to athlete privacy:
+
+- **100% On-Device Inference**: Raw camera video frames are processed in-memory directly on the device GPU/NPU (Apple Vision on iOS, MediaPipe on Android & Web).
+- **Zero Video Uploads**: Video recordings are **never** transmitted to remote servers or cloud storage.
+- **Anonymous Telemetry**: Only numeric biomechanical metrics (angles, rep counts, form scores, and national percentiles) and cryptographic hashes are broadcast to the scout mesh.
+- **Equal Access**: Operates seamlessly in low-connectivity rural stadiums, local gyms, and remote schools across India.
 
 ---
 
 ## 👥 Built With ❤️ For India's Athletes
 
-Developed for the Buildathon to break geographical barriers and empower every athlete across India with equal access to national sports scouting.
+TalentLens was engineered for the Buildathon to break geographic barriers and empower every athlete across India with equal access to national sports scouting.
 
 <div align="center">
 
 ⭐ **Star this repository if you believe in democratizing grassroots sports talent discovery!**
 
 </div>
+
